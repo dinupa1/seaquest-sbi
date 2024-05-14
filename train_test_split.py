@@ -7,8 +7,8 @@ import awkward as ak
 from sklearn.model_selection import train_test_split
 
 
-tree_P = uproot.open("/seaquest/users/knagai/Public/data/E906/simple_str/4pi/67_LH2_4pi/data.root")
-tree_D = uproot.open("/seaquest/users/knagai/Public/data/E906/simple_str/mc/LH2_run3_messy_1201_2398/data.root")
+tree_P = uproot.open("/seaquest/users/knagai/Public/data/E906/simple_str/4pi/67_LH2_4pi/data.root:save")
+tree_D = uproot.open("/seaquest/users/knagai/Public/data/E906/simple_str/mc/LH2_run3_messy_1201_2398/data.root:save")
 
 
 events_P = tree_P.arrays(["mass", "pT", "x1", "x2", "xF", "phi", "costh", "occuD1"])
