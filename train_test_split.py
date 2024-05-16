@@ -40,7 +40,7 @@ test_dic_P = {
     "costh": data_test_P["costh"],
 }
 
-events_D1 = events_D[(events_D.true_mass > 4.5) & (events_D.occuD1 < 300.)].to_numpy()[:int(data_fit_P["mass"].shape[0]* 0.06)]
+events_D1 = events_D[(events_D.true_mass > 4.5) & (events_D.occuD1 < 300.)].to_numpy()[:int(data_test_P["mass"].shape[0]* 0.06)]
 
 data_train_val_D, data_test_D = train_test_split(events_D1, test_size=0.33, shuffle=True)
 data_train_D, data_val_D = train_test_split(data_train_val_D, test_size=0.5, shuffle=True)
