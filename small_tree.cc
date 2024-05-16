@@ -20,7 +20,7 @@ void small_tree()
 
     auto hist = df1.Histo2D({"hist", "; phi [rad]; costh", 10, -PI, PI, 10, -1., 1.}, "phi", "costh");
 
-    auto can = new Tcanvas("can", "can", 800, 800);
+    auto can = new TCanvas("can", "can", 800, 800);
 
     auto fit = new TF2("fit", "[0]* (1. + [1]* y* y + 2.* [2]* y* sqrt(1. - y* y) *cos(x) + 0.5* [3]* (1. - y* y)* cos(2.* x))");
     fit->SetParLimits(1, -1., 1.);
