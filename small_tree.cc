@@ -2,7 +2,7 @@
 #include <TTree.h>
 #include <iostream>
 
-void simple_tree()
+void small_tree()
 {
     ROOT::EnableImplicitMT();
 
