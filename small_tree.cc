@@ -23,10 +23,13 @@ void small_tree()
     auto can = new TCanvas("can", "can", 800, 800);
 
     auto fit = new TF2("fit", "[0]* (1. + [1]* y* y + 2.* [2]* y* sqrt(1. - y* y) *cos(x) + 0.5* [3]* (1. - y* y)* cos(2.* x))");
+    fit->SetParLimits(0, 0., 1.);
     fit->SetParLimits(1, -1., 1.);
     fit->SetParLimits(2, -0.5, 0.5);
     fit->SetParLimits(3, -0.5, 0.5);
     fit->SetParNames("A", "#lambda", "#mu", "#nu");
+
+    hist->Scale(1./hist->Integral())
 
     hist->Fit("fit");
     hist->Draw("COLZ");
