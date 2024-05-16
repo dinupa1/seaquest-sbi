@@ -56,7 +56,7 @@ data_train_D, data_val_D = train_test_split(data_train_val_D, test_size=0.5, shu
 data_test_D, data_fit_D = train_test_split(data_test_fit_D, test_size=0.5, shuffle=True)
 
 train_dic_D = {
-    "true_mass": data_train_D["mass"],
+    "true_mass": data_train_D["true_mass"],
     "true_pT": data_train_D["true_pT"],
     "true_xF": data_train_D["true_xF"],
     "phi": data_train_D["phi"],
