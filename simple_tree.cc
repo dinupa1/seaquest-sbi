@@ -15,8 +15,6 @@ void simple_tree()
     TFile newfile("small.root", "recreate");
     auto newtree = oldtree->CloneTree();
 
-    auto newtree = oldtree->CloneTree();
-
     newtree->Print();
     newfile.Write();
 }
