@@ -10,5 +10,5 @@ void simple_tree()
 
     auto df1 = df.Filter("mass > 4.5");
 
-    df1..Snapshot("save", "small.root");
+    df1.Snapshot("save", "small.root");
 }
