@@ -29,7 +29,7 @@ void small_tree()
     fit->SetParLimits(3, -0.5, 0.5);
     fit->SetParNames("A", "#lambda", "#mu", "#nu");
 
-    hist->Scale(1./hist->Integral())
+    hist->Scale(1./hist->Integral());
 
     hist->Fit("fit");
     hist->Draw("COLZ");
