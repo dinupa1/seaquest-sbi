@@ -30,7 +30,7 @@ void small_tree()
 
     hist->Fit("fit");
     hist->Draw("COLZ");
-    can->SaveAs("particle.png")
+    can->SaveAs("particle.png");
 
     df1.Snapshot("save", "small.root");
 }
