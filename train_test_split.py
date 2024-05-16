@@ -13,7 +13,7 @@ tree_D = uproot.open("/seaquest/users/knagai/Public/data/E906/simple_str/mc/LH2_
 events_P = tree_P.arrays(["mass", "pT", "x1", "x2", "xF", "phi", "costh"])
 events_D = tree_D.arrays(["mass", "pT", "xF", "phi", "costh", "true_phi", "true_costh", "occuD1", "true_mass"])
 
-data_train_val_P, data_test_fit_P = train_test_split(events_P, test_size=0.5, shuffle=True)
+data_train_val_P, data_test_fit_P = train_test_split(events_P.to_numpy(), test_size=0.5, shuffle=True)
 data_train_P, data_val_P = train_test_split(data_train_val_P, test_size=0.5, shuffle=True)
 data_test_P, data_fit_P = train_test_split(data_test_fit_P, test_size=0.5, shuffle=True)
 
