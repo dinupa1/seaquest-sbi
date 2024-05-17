@@ -51,6 +51,8 @@ train_dic_D = {
     "true_xF": data_train_D["true_xF"],
     "phi": data_train_D["phi"],
     "costh": data_train_D["costh"],
+    "true_phi": data_train_D["true_phi"],
+    "true_costh": data_train_D["true_costh"],
 }
 
 val_dic_D = {
@@ -59,6 +61,8 @@ val_dic_D = {
     "true_xF": data_val_D["true_xF"],
     "phi": data_val_D["phi"],
     "costh": data_val_D["costh"],
+    "true_phi": data_val_D["true_phi"],
+    "true_costh": data_val_D["true_costh"],
 }
 
 test_dic_D = {
@@ -67,6 +71,8 @@ test_dic_D = {
     "true_xF": data_test_D["true_xF"],
     "phi": data_test_D["phi"],
     "costh": data_test_D["costh"],
+    "true_phi": data_test_D["true_phi"],
+    "true_costh": data_test_D["true_costh"],
 }
 
 outfile = uproot.recreate("train_test_data.root", compression=uproot.ZLIB(4))
