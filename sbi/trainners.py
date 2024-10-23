@@ -133,6 +133,6 @@ def test_ratio_model(model, X_test, theta_test, batch_size=1000, device=None):
             log_ratio, logit = model(X, theta)
             log_ratios = torch.cat([log_ratios, log_ratio]) if log_ratios is not None else log_ratio
 
-    log_ratio = log_ratio.cpu().detach().numpy()
+    log_ratios = log_ratios.cpu().detach().numpy()
 
-    return np.exp(log_ratio[:, 0])
+    return np.exp(log_ratios[:, 0])

@@ -112,7 +112,7 @@ void forward_simulation(int seed, int events, int ndata) {
     std::cout << "[===> forward simulation]" << std::endl;
 
     // generator
-    TRandom3* prior = new TRandom3(0);
+    TRandom3* prior = new TRandom3(seed);
 
     // inputs
     TFile* infile = TFile::Open("./data/generator.root", "read");
@@ -128,7 +128,7 @@ void forward_simulation(int seed, int events, int ndata) {
 
     // test events
     simulator* sim2 = new simulator("test_tree");
-    sim2->samples(test, prior, 1000, ndata);
+    sim2->samples(test, prior, 20000, ndata);
     sim2->save();
 
     outfile->Write();

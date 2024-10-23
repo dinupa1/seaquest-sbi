@@ -25,16 +25,16 @@ class ratio_10x10(nn.Module):
         super(ratio_10x10, self).__init__()
 
         self.cnn_head = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3, padding=1),
+            nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, padding=1),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
-            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1),
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
         )
 
         self.linear_head = nn.Sequential(
-            nn.Linear(32* 2 * 2 + 3, 64, bias=True),
+            nn.Linear(64 * 2 * 2 + 3, 64, bias=True),
             nn.ReLU(),
             nn.BatchNorm1d(64),
             nn.Dropout(p=0.2),

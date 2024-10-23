@@ -31,14 +31,19 @@ from simulator import forward_simulation
 dvc = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {dvc} device")
 
+num_events = np.array([50000, 100000, 200000, 500000])
+batch_sizes = np.array([1000, 5000, 10000, 20000, 50000])
 
-batch_size = 1000
-
-num_events = np.array([50000, 100000, 200000, 500000, 1000000])
-
-lambda_mean, lambda_error = [], []
-mu_mean, mu_error = [], []
-nu_mean, nu_error = [], []
+tree = {
+    "train_size" : [],
+    "batch_size": [],
+    "lambda_mean": [],
+    "mu_mean": [],
+    "nu_mean": [],
+    "lambda_error": [],
+    "mu_error": [],
+    "nu_error": [],
+}
 
 for events in num_events:
 
@@ -68,76 +73,72 @@ for events in num_events:
     ratio_ds = ratio_dataset(X, theta, theta0)
     ratio_ds_train, ratio_ds_val = random_split(ratio_ds, [0.5, 0.5])
 
-    train_loader = DataLoader(ratio_ds_train, batch_size=batch_size, shuffle=True, num_workers=4)
-    val_loader = DataLoader(ratio_ds_val, batch_size=batch_size, shuffle=False, num_workers=4)
+    for batch_size in batch_sizes:
 
-    model = ratio_10x10().double().to(dvc)
-    optimizer = optim.Adam(model.parameters(), lr=0.0001)
-    criterion = nn.BCELoss()
+        train_loader = DataLoader(ratio_ds_train, batch_size=int(batch_size), shuffle=True)
+        val_loader = DataLoader(ratio_ds_val, batch_size=int(batch_size), shuffle=False)
 
-    tr = ratio_trainner(train_loader, val_loader, model, criterion, optimizer, device=dvc)
-    tr.fit()
+        model = ratio_10x10().double().to(dvc)
+        optimizer = optim.Adam(model.parameters(), lr=0.0001)
+        criterion = nn.BCELoss()
 
-    #
-    # test data
-    #
+        tr = ratio_trainner(train_loader, val_loader, model, criterion, optimizer, device=dvc)
+        tr.fit()
 
-    test_tree = uproot.open("./data/outputs.root:test_tree")
-    X_test = test_tree["X"].array().to_numpy()
-    theta_test = test_tree["theta"].array().to_numpy()
+        #
+        # test data
+        #
 
-    N_samples = 20000
+        test_tree = uproot.open("./data/outputs.root:test_tree")
+        X_test = test_tree["X"].array().to_numpy()
+        theta_test = test_tree["theta"].array().to_numpy()
 
-    lambda_prior = np.random.uniform(-1., 1., N_samples)
-    mu_prior = np.random.uniform(-0.5, 0.5, N_samples)
-    nu_prior = np.random.uniform(-0.5, 0.5, N_samples)
+        N_samples = 25000
 
+        lambda_prior = np.random.uniform(-1., 1., N_samples)
+        mu_prior = np.random.uniform(-0.5, 0.5, N_samples)
+        nu_prior = np.random.uniform(-0.5, 0.5, N_samples)
 
-    theta_prior = torch.tensor([(lam, mu, nu) for lam, mu, nu in zip(lambda_prior, mu_prior, nu_prior)]).double().to(dvc)
+        theta_prior = torch.tensor([(lam, mu, nu) for lam, mu, nu in zip(lambda_prior, mu_prior, nu_prior)]).double().to(dvc)
 
-    lambda_mean2, lambda_error2 = [], []
-    mu_mean2, mu_error2 = [], []
-    nu_mean2, nu_error2 = [], []
+        lambda_mean2, lambda_error2 = [], []
+        mu_mean2, mu_error2 = [], []
+        nu_mean2, nu_error2 = [], []
 
-    for i in range(len(theta_test)):
-        X_test_array = np.array([X_test[i] for j in range(N_samples)])
-        X_test_tensor = torch.from_numpy(X_test_array).double().to(dvc)
+        for i in range(len(theta_test)):
+            X_test_array = np.array([X_test[i] for j in range(N_samples)])
+            X_test_tensor = torch.from_numpy(X_test_array).double().to(dvc)
 
-        log_ratio = test_ratio_model(model, X_test_tensor, theta_prior, batch_size=batch_size, device=dvc)
+            log_ratio = test_ratio_model(model, X_test_tensor, theta_prior, batch_size=int(batch_size), device=dvc)
 
-        lambda1, lambda2 = mean_and_error(lambda_prior, log_ratio)
-        lambda_mean2.append(lambda1)
-        lambda_error2.append(lambda2)
+            lambda1, lambda2 = mean_and_error(lambda_prior, log_ratio)
+            lambda_mean2.append(lambda1)
+            lambda_error2.append(lambda2)
 
-        mu1, mu2 = mean_and_error(mu_prior, log_ratio)
-        mu_mean2.append(mu1)
-        mu_error2.append(mu2)
+            mu1, mu2 = mean_and_error(mu_prior, log_ratio)
+            mu_mean2.append(mu1)
+            mu_error2.append(mu2)
 
-        nu1, nu2 = mean_and_error(nu_prior, log_ratio)
-        nu_mean2.append(nu1)
-        nu_error2.append(nu2)
+            nu1, nu2 = mean_and_error(nu_prior, log_ratio)
+            nu_mean2.append(nu1)
+            nu_error2.append(nu2)
 
-    lambda_mean3 = (theta_test[:, 0] - np.array(lambda_mean2))/np.array(lambda_error2)
-    lambda_mean.append(np.mean(lambda_mean3))
-    lambda_error.append(np.std(lambda_mean3))
+        tree["train_size"].append(events)
+        tree["batch_size"].append(batch_size)
 
-    mu_mean3 = (theta_test[:, 1] - np.array(mu_mean2))/np.array(mu_error2)
-    mu_mean.append(np.mean(mu_mean3))
-    mu_error.append(np.std(mu_mean3))
+        lambda_mean3 = (theta_test[:, 0] - np.array(lambda_mean2))/np.array(lambda_error2)
+        tree["lambda_mean"].append(np.mean(lambda_mean3))
+        tree["lambda_error"].append(np.std(lambda_mean3))
 
-    nu_mean3 = (theta_test[:, 2] - np.array(nu_mean2))/np.array(nu_error2)
-    nu_mean.append(np.mean(nu_mean3))
-    nu_error.append(np.std(nu_mean3))
+        mu_mean3 = (theta_test[:, 1] - np.array(mu_mean2))/np.array(mu_error2)
+        tree["mu_mean"].append(np.mean(mu_mean3))
+        tree["mu_error"].append(np.std(mu_mean3))
+
+        nu_mean3 = (theta_test[:, 2] - np.array(nu_mean2))/np.array(nu_error2)
+        tree["nu_mean"].append(np.mean(nu_mean3))
+        tree["nu_error"].append(np.std(nu_mean3))
 
 
 outfile = uproot.recreate("./data/hyperparameter0.root", compression=uproot.ZLIB(4))
-outfile["tree"] = {
-    "lambda_mean": np.array(lambda_mean),
-    "mu_mean": np.array(mu_mean),
-    "nu_mean": np.array(nu_mean),
-    "lambda_error": np.array(lambda_error),
-    "mu_error": np.array(mu_error),
-    "nu_error": np.array(nu_error),
-    "train_size" : num_events,
-}
+outfile["tree"] = tree
 outfile.close()
