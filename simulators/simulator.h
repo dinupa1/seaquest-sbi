@@ -1,5 +1,5 @@
-#ifndef _H_SIMULATOR_H_
-#define _H_SIMULATOR_H_
+#ifndef _SIMULATOR__H_
+#define _SIMULATOR__H_
 
 #include <TFile.h>
 #include <TTree.h>
@@ -12,19 +12,35 @@
 
 double cross_section(double lambda, double mu, double nu, double phi, double costh);
 
-void forward_simulation(int seed, int events, int ndata);
+void forward_simulation(int seed, int train_size, int ndata, int test_size);
 
-class simulator {
-    double X[1][10][10];
-    double theta[3];
+class simulator2D {
+    double Xs[1][10][10];
+    double thetas[3];
+    double thetas0[3];
     TTree* tree;
 public:
-    simulator(TString tname);
-    virtual ~simulator(){;}
-    void samples(TTree* inputs, TRandom3* prior, int events, int ndata); // train data
-    // void samples(TTree* inputs, TRandom3* prior, double lambda, double mu, double nu); // test data
+    simulator2D(TString tname);
+    virtual ~simulator2D(){;}
+    void samples(TTree* inputs, TRandom3* generator, int events, int ndata);
     void save(){tree->Write();}
 };
 
-#endif /* _H_SIMULATOR_H_ */
+
+class simulator3D {
+    double Xs[4][10][10];
+    double thetas[12];
+    double thetas0[12];
+    TTree* tree;
+    double pT_edges[5] = {0., 0.4088, 0.64025, 0.91765, 2.5};
+    double phi_edges[11];
+    double costh_edges[11];
+public:
+    simulator3D(TString tname);
+    virtual ~simulator3D(){;}
+    void samples(TTree* inputs, TRandom3* generator, int events, int ndata);
+    void save(){tree->Write();}
+};
+
+#endif /* _SIMULATOR__H_ */
 
