@@ -33,20 +33,6 @@ void data_augmentation() {
 
     auto outfile = new TFile("./data/outputs.root", "recreate");
 
-    auto prior = new TTree("prior", "prior");
-
-    double thetas[3];
-
-    prior->Branch("thetas", thetas, "thetas[3]/D");
-
-    for(int ii = 0; ii < N_data; ii++) {
-        thetas[0] = generator->Uniform(-1., 1.);
-        thetas[1] = generator->Uniform(-0.5, 0.5);
-        thetas[2] = generator->Uniform(-0.5, 0.5);
-
-        prior->Fill();
-    }
-
     auto sim1 = new simulator2D("train_tree");
     sim1->samples(X_train, generator, N_train, N_data);
     sim1->save();
