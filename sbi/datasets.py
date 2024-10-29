@@ -21,11 +21,17 @@ from sklearn.utils import resample
 
 
 class ratio_dataset(Dataset):
-    def __init__(self, X, theta1, theta0):
+    def __init__(self, tree_name):
         super(ratio_dataset, self).__init__()
-        self.X = np.concatenate([X, X])
-        self.theta = np.concatenate([theta1, theta0])
-        self.label = np.concatenate([np.ones((len(X), 1)), np.zeros((len(X), 1))])
+
+        tree = uproot.open(tree_name)
+        Xs= tree["Xs"].array().to_numpy()
+        thetas = tree["thetas"].array().to_numpy()
+        thetas0 = tree["thetas0"].array().to_numpy()
+
+        self.X = np.concatenate([Xs, Xs])
+        self.theta = np.concatenate([thetas, thetas0])
+        self.label = np.concatenate([np.ones((len(Xs), 1)), np.zeros((len(Xs), 1))])
         
     def __len__(self):
         return len(self.X)

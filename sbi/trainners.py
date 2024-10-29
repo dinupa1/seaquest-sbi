@@ -19,11 +19,6 @@ from sklearn.metrics import roc_auc_score, roc_curve, auc
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
-def roc_auc(inputs, target, weight=None):
-    fpr, tpr, _ = roc_curve(target, inputs, sample_weight=weight)
-    tpr, fpr = np.array(list(zip(*sorted(zip(tpr, fpr)))))
-    return 1 - auc(tpr, fpr)
-
 
 class ratio_trainner:
     def __init__(self, train_dataloader, val_dataloader, ratio_model, criterion, optimizer, max_epoch=1000, patience=10, device=None):
@@ -44,6 +39,7 @@ class ratio_trainner:
         self.best_state = self.ratio_model.state_dict()
         self.best_epoch = None
         self.best_val_loss = None
+        self.best_auc = None
         self.i_try = 0
         self.epoch = 0
         self.size = len(train_dataloader.dataset)
@@ -59,7 +55,7 @@ class ratio_trainner:
 
             X, theta, label = X.double().to(self.device), theta.double().to(self.device), label.double().to(self.device)
 
-            log_ratio, logit = self.ratio_model(X, theta)
+            logit = self.ratio_model(X, theta)
             
             loss = self.criterion(logit, label)
 
@@ -73,11 +69,11 @@ class ratio_trainner:
         self.ratio_model.eval()
         logits, labels = None, None
         with torch.no_grad():
-            for batch, (X, theta, label) in enumerate(self.train_dataloader):
+            for batch, (X, theta, label) in enumerate(data_loader):
                 
                 X, theta, label = X.double().to(self.device), theta.double().to(self.device), label.double().to(self.device)
                 
-                log_ratio, logit = self.ratio_model(X, theta)
+                logit = self.ratio_model(X, theta)
 
                 logits = torch.cat([logits, logit]) if logits is not None else logit
                 labels = torch.cat([labels, label]) if labels is not None else label
@@ -106,6 +102,7 @@ class ratio_trainner:
 
             if self.best_val_loss == None or val_loss < self.best_val_loss:
                 self.best_val_loss = val_loss
+                self.best_auc = val_auc
                 self.best_state = copy.deepcopy(self.ratio_model.state_dict())
                 self.best_epoch = epoch
                 self.i_try = 0
@@ -113,26 +110,28 @@ class ratio_trainner:
                 self.i_try += 1
             else:
                 print(f"Early stopping! Restore state at epoch {self.best_epoch}.")
-                print(f"[Best_val_loss: {self.best_val_loss:>5f}]")
-                self.ratio_model.load_state_dict(self.best_state)
+                print(f"[Best_val_loss: {self.best_val_loss:>5f}, Best_ROC_AUC: {self.best_auc:>5f}]")
+                torch.save(self.best_state, "model_weights.pt")
                 break
 
 
-def test_ratio_model(model, X_test, theta_test, batch_size=1000, device=None):
+def test_ratio_model(ratio_model, X_test, theta_test, batch_size=5000, device=None):
 
-    test_ds = TensorDataset(X_test, theta_test)
+    test_ds = TensorDataset(torch.from_numpy(X_test), torch.from_numpy(theta_test))
     dataloader = DataLoader(test_ds, batch_size=batch_size, shuffle=False)
 
-    log_ratios = None
+    ratio_model.load_state_dict(torch.load("model_weights.pt", weights_only=True))
 
-    model.eval()
+    logits = None
+
+    ratio_model.eval()
     with torch.no_grad():
         for batch, (X, theta) in enumerate(dataloader):
             X, theta = X.double().to(device), theta.double().to(device)
 
-            log_ratio, logit = model(X, theta)
-            log_ratios = torch.cat([log_ratios, log_ratio]) if log_ratios is not None else log_ratio
+            logit = ratio_model(X, theta)
+            logits = torch.cat([logits, logit]) if logits is not None else logit
 
-    log_ratios = log_ratios.cpu().detach().numpy()
+    logits = logits.cpu().detach().numpy()
 
-    return np.exp(log_ratios[:, 0])
+    return logits[:, 0]/(1. - logits[:, 0] + 0.000000000000000001)

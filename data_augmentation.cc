@@ -1,4 +1,5 @@
-R__LOAD_LIBRARY(simulators/lib_simulator.so)
+R__LOAD_LIBRARY(./simulators/lib_simulator.so)
+R__LOAD_LIBRARY(./fitters/lib_fitter.so)
 
 #include <TFile.h>
 #include <TTree.h>
@@ -11,6 +12,7 @@ R__LOAD_LIBRARY(simulators/lib_simulator.so)
 #include <iostream>
 
 #include "simulators/simulator.h"
+#include "fitters/fitter.h"
 
 
 void data_augmentation() {
@@ -22,6 +24,7 @@ void data_augmentation() {
 
     auto generator = new TRandom3(seed);
 
+    /*
     std::cout << "[ ===> Forward simulation ]" << std::endl;
 
     gSystem->Exec("python ./simulators/generator.py");
@@ -47,4 +50,19 @@ void data_augmentation() {
 
     outfile->Write();
     outfile->Close();
+    */
+
+    gSystem->Exec("python train_ratio_model.py");
+
+    auto infile2 = TFile::Open("./data/outputs.root", "read");
+    auto test_tree = (TTree*)infile2->Get("test_tree");
+
+    auto outfile2 = new TFile("./data/final.root", "recreate");
+
+    auto fit1 = new fit2D();
+    fit1->run(test_tree, generator, N_data);
+
+    outfile2->Write();
+    outfile2->Close();
+
 }
