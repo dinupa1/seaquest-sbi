@@ -52,7 +52,7 @@ void data_augmentation() {
     outfile->Close();
     */
 
-    gSystem->Exec("python train_ratio_model.py");
+    // gSystem->Exec("python train_ratio_model.py");
 
     auto infile2 = TFile::Open("./data/outputs.root", "read");
     auto test_tree = (TTree*)infile2->Get("test_tree");
@@ -61,6 +61,8 @@ void data_augmentation() {
 
     auto fit1 = new fit2D();
     fit1->run(test_tree, generator, N_data);
+    fit1->plot();
+    fit1->done();
 
     outfile2->Write();
     outfile2->Close();
