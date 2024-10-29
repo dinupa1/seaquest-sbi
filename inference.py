@@ -54,4 +54,4 @@ outputs["tree"] = {
     "nu": theta_test[:, 2],
     "weight": weights,
 }
-outfile.close()
+outputs.close()
