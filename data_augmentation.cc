@@ -61,7 +61,7 @@ void data_augmentation() {
 
     auto fit1 = new fit2D();
     fit1->run(test_tree, generator, N_data);
-    fit1->plot();
+    fit1->plots();
     fit1->done();
 
     outfile2->Write();

@@ -23,7 +23,6 @@ from sbi import ratio_net
 from sbi import ratio_dataset
 from sbi import ratio_trainner
 from sbi import test_ratio_model
-from sbi import ratio_test_dataset
 
 seed: int = 42
 np.random.seed(seed)
