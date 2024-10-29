@@ -37,7 +37,7 @@ public:
     virtual ~fit2D(){;}
     void eval(TRandom3* generator, int ndata);
     void fit(int ii);
-    void plot_fits(TH1D* lambda_hist, TH1D* mu_hist, TH1D* nu_hist, int ii));
+    void plot_fits(TH1D* lambda_hist, TH1D* mu_hist, TH1D* nu_hist, int ii);
     void run(TTree* tree, TRandom3* generator, int ndata);
     void plots();
 };

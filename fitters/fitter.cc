@@ -27,10 +27,10 @@ fit2D::fit2D() {
 
     posteriors = new TTree("posteriors", "posteriors");
 
-    posteriors->Branch("theta", theta, "theta[3]/D");
+    posteriors->Branch("thetas", thetas, "theta[3]/D");
     posteriors->Branch("measures", measures, "measures[3]/D");
     posteriors->Branch("errors", errors, "errors[3]/D");
-    posteriors->Branch("chisq", chisq, "chisq[3]/D");
+    posteriors->Branch("chisqs", chisqs, "chisq[3]/D");
 
     can = new TCanvas("can", "can", 800, 800);
 }
@@ -45,7 +45,7 @@ void fit2D::eval(TRandom3* generator, int ndata) {
     double priors[3];
 
     outtree->Branch("Xs", Xs, "Xs[1][10][10]/D");
-    outfile->Branch("priors", priors, "priors[3]/D");
+    outtree->Branch("priors", priors, "priors[3]/D");
 
     for(int ii = 0; ii < ndata; ii++) {
         priors[0] = generator->Uniform(-1., 1.);
@@ -63,7 +63,7 @@ void fit2D::plot_fits(TH1D* lambda_hist, TH1D* mu_hist, TH1D* nu_hist, int ii) {
 
     lambda_hist->Draw("HIST");
 
-    TLine* lambda_line = new TLine(theta[0], 0., theta[0], 1.);
+    TLine* lambda_line = new TLine(thetas[0], 0., thetas[0], 1.);
     lambda_line->SetLineColor(2);
     lambda_line->SetLineWidth(2);
     lambda_line->SetLineStyle(2);
@@ -76,7 +76,7 @@ void fit2D::plot_fits(TH1D* lambda_hist, TH1D* mu_hist, TH1D* nu_hist, int ii) {
 
     mu_hist->Draw("HIST");
 
-    TLine* mu_line = new TLine(theta[1], 0., theta[1], 1.);
+    TLine* mu_line = new TLine(thetas[1], 0., thetas[1], 1.);
     mu_line->SetLineColor(2);
     mu_line->SetLineWidth(2);
     mu_line->SetLineStyle(2);
@@ -89,7 +89,7 @@ void fit2D::plot_fits(TH1D* lambda_hist, TH1D* mu_hist, TH1D* nu_hist, int ii) {
 
     nu_hist->Draw("HIST");
 
-    TLine* nu_line = new TLine(theta[2], 0., theta[2], 1.);
+    TLine* nu_line = new TLine(thetas[2], 0., thetas[2], 1.);
     nu_line->SetLineColor(2);
     nu_line->SetLineWidth(2);
     nu_line->SetLineStyle(2);
@@ -116,7 +116,7 @@ void fit2D::fit(int ii) {
     tree->SetBranchAddress("lambda", &lambda);
     tree->SetBranchAddress("mu", &mu);
     tree->SetBranchAddress("nu", &nu);
-    tree->SetBranchAddress("weight", weight);
+    tree->SetBranchAddress("weight", &weight);
 
     TH1D* lambda_hist = new TH1D("lambda_hist", "; #lambda; p(#lambda | x)", 30, -1., 1.);
     TH1D* mu_hist = new TH1D("mu_hist", "; #mu; p(#mu | x)", 30, -0.5, 0.5);
@@ -216,6 +216,6 @@ void fit2D::run(TTree* tree, TRandom3* generator, int ndata) {
 
         gSystem->Exec("python inference.py");
 
-        fit(lambda_hist, mu_hist, nu_hist, lambda_fit, mu_fit, nu_fit);
+        fit(ii);
     }
 }

@@ -10,7 +10,7 @@ cd ..
 
 cd ./fitters
 
-root -b -e 'gSystem->CompileMacro("fitter.cc", "kfgO", "lib_fitter")' - q
+root -b -e 'gSystem->CompileMacro("fitter.cc", "kfgO", "lib_fitter")' -q
 
 cd ..
 
