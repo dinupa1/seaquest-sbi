@@ -39,7 +39,7 @@ print(f"Using {dvc} device")
 
 tree = uproot.open("./data/eval.root:tree")
 X_test = tree["Xs"].array().to_numpy()
-theta_test = tree["prior"].array().to_numpy()
+theta_test = tree["priors"].array().to_numpy()
 
 
 model = ratio_net().double().to(dvc)
