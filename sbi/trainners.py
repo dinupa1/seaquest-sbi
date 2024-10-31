@@ -111,7 +111,7 @@ class ratio_trainner:
             else:
                 print(f"Early stopping! Restore state at epoch {self.best_epoch}.")
                 print(f"[Best_val_loss: {self.best_val_loss:>5f}, Best_ROC_AUC: {self.best_auc:>5f}]")
-                torch.save(self.best_state, "model_weights.pt")
+                self.ratio_model.load_state_dict(self.best_state)
                 break
 
 
@@ -119,8 +119,6 @@ def test_ratio_model(ratio_model, X_test, theta_test, batch_size=5000, device=No
 
     test_ds = TensorDataset(torch.from_numpy(X_test), torch.from_numpy(theta_test))
     dataloader = DataLoader(test_ds, batch_size=batch_size, shuffle=False)
-
-    ratio_model.load_state_dict(torch.load("model_weights.pt", weights_only=True))
 
     logits = None
 

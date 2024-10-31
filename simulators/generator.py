@@ -6,9 +6,12 @@ import awkward as ak
 
 from sklearn.model_selection import train_test_split
 
-seed = 42
+seed: int=42
 
 np.random.seed(seed)
+
+n_data = 1000000
+n_theta = 3
 
 print("[ ===> train test split ]")
 
@@ -19,7 +22,17 @@ events = save.arrays(branches)
 events1 = events[(events.mass > 4.5) & (events.mass < 9.) & (events.xF > 0.) & (events.xF < 1.) & (np.abs(events.costh) < 0.4) & (events.occuD1 < 300.)]
 
 X_train_val, X_test = train_test_split(events1.to_numpy(), test_size=0.3, shuffle=True)
-X_train, X_val = train_test_split(X_train_val, test_size=0.2, shuffle=True)
+X_train, X_val = train_test_split(X_train_val, test_size=0.5, shuffle=True)
+
+theta = np.random.uniform([-1.2, -0.6, -0.6], [1.2, 0.6, 0.6], [n_data, n_theta])
+
+theta_train_val, theta_test = train_test_split(theta, test_size=0.1, shuffle=True)
+theta_train, theta_val = train_test_split(theta_train_val, test_size= 0.25, shuffle=True)
+
+theta0_test, theta1_test = train_test_split(theta_test, test_size=0.5, shuffle=True)
+theta0_val, theta1_val = train_test_split(theta_val, test_size=0.5, shuffle=True)
+theta0_train, theta1_train = train_test_split(theta_train, test_size=0.5, shuffle=True)
+
 
 outputs = uproot.recreate("./data/generator.root", compression=uproot.ZLIB(4))
 
@@ -35,7 +48,6 @@ outputs["X_train"] = {
     "true_phi": X_train["true_phi"],
     "true_costh": X_train["true_costh"],
     }
-
 
 outputs["X_val"] = {
     "mass": X_val["mass"],
@@ -61,6 +73,21 @@ outputs["X_test"] = {
     "true_xF": X_test["true_xF"],
     "true_phi": X_test["true_phi"],
     "true_costh": X_test["true_costh"],
+    }
+
+outputs["theta_train"] = {
+    "theta0": theta0_train,
+    "theta": theta1_train,
+    }
+
+outputs["theta_val"] = {
+    "theta0": theta0_val,
+    "theta": theta1_val,
+    }
+
+outputs["theta_test"] = {
+    "theta0": theta0_test,
+    "theta": theta1_test,
     }
 
 outputs.close()

@@ -8,21 +8,25 @@
 #include <TH2D.h>
 #include <TMath.h>
 #include <TString.h>
+#include <TSystem.h>
 #include <iostream>
+
+double pi = TMath::Pi();
 
 double cross_section(double lambda, double mu, double nu, double phi, double costh);
 
-void forward_simulation(int seed, int train_size, int ndata, int test_size);
+void forward_simulation(int seed);
 
 class simulator2D {
-    double Xs[1][10][10];
-    double thetas[3];
-    double thetas0[3];
+    double X[1][10][10];
+    double theta[3];
+    double theta0[3];
     TTree* tree;
 public:
     simulator2D(TString tname);
     virtual ~simulator2D(){;}
-    void samples(TTree* inputs, TRandom3* generator, int events, int ndata);
+    void train_samples(TTree* inputs, TTree* prior, TRandom3* generator);
+    void test_samples(TTree* inputs, TTree* prior, TRandom3* generator);
     void save(){tree->Write();}
 };
 
