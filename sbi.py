@@ -25,7 +25,7 @@ from sbi import ratio_trainner
 from sbi import test_ratio_model
 from sbi import mean_and_error
 
-from simulator import forward_simulation
+from simulators import forward_simulation
 
 dvc = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {dvc} device")
@@ -89,8 +89,13 @@ tr.fit()
 
 for i in range(len(theta_test)):
     X_test_array = np.array([X_test[i] for j in range(len(theta0_test))])
-    X_test_tensor = torch.from_numpy(X_test_array).double().to(dvc)
-    tree["weights"].append(test_ratio_model(model, X_test_tensor, theta0_test, batch_size=batch_size/2, device=dvc))
+    tree["lambda_true"].append(theta_test[i, 0])
+    tree["mu_true"].append(theta_test[i, 1])
+    tree["nu_true"].append(theta_test[i, 2])
+    tree["weights"].append(test_ratio_model(model, X_test_array, theta0_test, batch_size=500, device=dvc))
+
+    if i%1000 == 0:
+        print(f"[===> {i} tests are done ]")
 
 outfile = uproot.recreate("./data/eval.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree

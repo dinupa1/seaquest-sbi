@@ -62,10 +62,10 @@ class ratio_net(nn.Module):
         )
 
         self.log_ratio = nn.Sequential(
-            linear_block(16 * 2 * 2 + theta_dim, 64),
+            linear_block(16 * 2 * 2 + theta_dim, 128),
             # nn.Dropout(p=0.1),
-            linear_block(64, 64),
-            linear_block(64, 64),
+            linear_block(128, 128),
+            linear_block(128, 64),
             nn.Linear(64, 1, bias=True),
         )
 
