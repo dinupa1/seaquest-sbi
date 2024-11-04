@@ -25,8 +25,6 @@ from sbi import ratio_trainner
 from sbi import test_ratio_model
 from sbi import mean_and_error
 
-from simulators import forward_simulation
-
 dvc = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {dvc} device")
 

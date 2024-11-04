@@ -10,4 +10,3 @@ ROOT.gInterpreter.ProcessLine('#include "./simulators/simulator.h"')
 ROOT.gSystem.Load("./simulators/lib_simulator.so")
 
 from ROOT import simulator2D
-from ROOT import forward_simulation

@@ -218,7 +218,7 @@ void simulator3D::samples(TTree* inputs, TRandom3* generator, int events, int nd
     }
 }
 
-
+/*
 void forward_simulation(int seed) {
 
     std::cout << "[ ===> forward simulation ]" << std::endl;
@@ -258,3 +258,4 @@ void forward_simulation(int seed) {
     outfile->Write();
     outfile->Close();
 }
+*/
