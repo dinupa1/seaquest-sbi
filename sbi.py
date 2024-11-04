@@ -19,7 +19,7 @@ from sklearn.metrics import roc_auc_score, roc_curve, auc
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
-from sbi import ratio_net
+from sbi import ResNet
 from sbi import ratio_dataset
 from sbi import ratio_trainner
 from sbi import test_ratio_model
@@ -35,17 +35,12 @@ torch.cuda.manual_seed(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-batch_size: int = 1000
+batch_size: int = 64
 
 tree = {
-    "lambda_true": [],
-    "mu_true": [],
-    "nu_true": [],
+    "theta":[],
     "weights": [],
     }
-
-# forward simulation
-forward_simulation(seed)
 
 
 #
@@ -66,7 +61,9 @@ theta0_val = val_tree["theta0"].array().to_numpy()
 test_tree = uproot.open("./data/outputs.root:test_tree")
 X_test = test_tree["X"].array().to_numpy()
 theta_test = test_tree["theta"].array().to_numpy()
-theta0_test = test_tree["theta0"].array().to_numpy()
+
+theta_prior = uproot.open("./data/generator.root:theta_prior")
+theta0_test = theta_prior["theta0"].to_numpy()
 
 ds_train = ratio_dataset(X_train, theta_train, theta0_train)
 ds_val = ratio_dataset(X_val, theta_val, theta0_val)
@@ -74,7 +71,7 @@ ds_val = ratio_dataset(X_val, theta_val, theta0_val)
 train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False)
 
-model = ratio_net().double().to(dvc)
+model = ResNet().double().to(dvc)
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
 criterion = nn.BCELoss()
 
@@ -87,17 +84,13 @@ tr.fit()
 
 for i in range(len(theta_test)):
     X_test_array = np.array([X_test[i] for j in range(len(theta0_test))])
-    tree["lambda_true"].append(theta_test[i, 0])
-    tree["mu_true"].append(theta_test[i, 1])
-    tree["nu_true"].append(theta_test[i, 2])
-    tree["weights"].append(test_ratio_model(model, X_test_array, theta0_test, batch_size=500, device=dvc))
+    tree["theta"].append(theta_test[i])
+    tree["weights"].append(test_ratio_model(model, X_test_array, theta0_test, batch_size=32, device=dvc))
 
     if i%1000 == 0:
         print(f"[===> {i} tests are done ]")
 
 outfile = uproot.recreate("./data/eval.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
-outfile["priors"] = {
-    "theta": theta0_test,
-    }
+outfile["priors"] = { "theta": theta0_test, }
 outfile.close()

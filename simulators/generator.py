@@ -10,8 +10,9 @@ seed: int=42
 
 np.random.seed(seed)
 
-n_data = 1000000
-n_theta = 3
+n_data:int = 2000000
+n_theta:int = 12
+n_prior:int = 15000
 
 print("[ ===> train test split ]")
 
@@ -24,14 +25,21 @@ events1 = events[(events.mass > 4.5) & (events.mass < 9.) & (events.xF > 0.) & (
 X_train_val, X_test = train_test_split(events1.to_numpy(), test_size=0.3, shuffle=True)
 X_train, X_val = train_test_split(X_train_val, test_size=0.5, shuffle=True)
 
-theta = np.random.uniform([-1.2, -0.6, -0.6], [1.2, 0.6, 0.6], [n_data, n_theta])
+theta = np.random.uniform([-1.5, -0.6, -0.6, -1.5, -0.6, -0.6, -1.5, -0.6, -0.6, -1.5, -0.6, -0.6], [1.5, 0.6, 0.6, 1.5, 0.6, 0.6, 1.5, 0.6, 0.6, 1.5, 0.6, 0.6], [n_data, n_theta])
 
-theta_train_val, theta_test = train_test_split(theta, test_size=0.1, shuffle=True)
-theta_train, theta_val = train_test_split(theta_train_val, test_size= 0.25, shuffle=True)
+theta_train_test, theta_prior = train_test_split(theta, test_size=n_prior, shuffle=True)
+
+theta_train_val, theta_test = train_test_split(theta_train_test, test_size=0.1, shuffle=True)
+theta_train, theta_val = train_test_split(theta_train_val, test_size=0.3, shuffle=True)
 
 theta0_test, theta1_test = train_test_split(theta_test, test_size=0.5, shuffle=True)
 theta0_val, theta1_val = train_test_split(theta_val, test_size=0.5, shuffle=True)
 theta0_train, theta1_train = train_test_split(theta_train, test_size=0.5, shuffle=True)
+
+print(f"[ ===> prior size {theta_prior.shape} ]")
+print(f"[ ===> test size {theta1_test.shape} ]")
+print(f"[ ===> val size {theta0_val.shape}, {theta1_val.shape} ]")
+print(f"[ ===> train size {theta0_train.shape}, {theta1_train.shape} ]")
 
 
 outputs = uproot.recreate("./data/generator.root", compression=uproot.ZLIB(4))
@@ -88,6 +96,10 @@ outputs["theta_val"] = {
 outputs["theta_test"] = {
     "theta0": theta0_test,
     "theta": theta1_test,
+    }
+
+outputs["theta_prior"] = {
+    "theta0": theta_prior,
     }
 
 outputs.close()

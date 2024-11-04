@@ -32,17 +32,17 @@ public:
 
 
 class simulator3D {
-    double Xs[4][10][10];
-    double thetas[12];
-    double thetas0[12];
+    double X[4][12][12];
+    double theta[12];
+    double theta0[12];
     TTree* tree;
     double pT_edges[5] = {0., 0.4088, 0.64025, 0.91765, 2.5};
-    double phi_edges[11];
-    double costh_edges[11];
+    double phi_edges[13];
+    double costh_edges[13];
 public:
     simulator3D(TString tname);
     virtual ~simulator3D(){;}
-    void samples(TTree* inputs, TRandom3* generator, int events, int ndata);
+    void samples(TTree* inputs, TTree* prior, TRandom3* generator);
     void save(){tree->Write();}
 };
 

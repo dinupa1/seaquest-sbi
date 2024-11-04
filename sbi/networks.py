@@ -20,62 +20,70 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
 
-class conv_block(nn.Module):
-    def __init__(self, in_channels: int=1, out_channels: int=32):
-        super(conv_block, self).__init__()
+class ResidualBlock(nn.Module):
+    def __init__(self, input_featues: int=4, output_features: int = 32):
+        super(ResidualBlock, self).__init__()
 
-        self.net = nn.Sequential(
-            nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=out_channels, out_channels=out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(),
-            nn.AvgPool2d(kernel_size=2, stride=2),
-        ) # out = in/2
-
-    def forward(self, x):
-        return self.net(x)
-
-
-class linear_block(nn.Module):
-    def __init__(self, in_features: int=1, out_features: int=32):
-        super(linear_block, self).__init__()
-
-        self.net = nn.Sequential(
-            nn.Linear(in_features, out_features, bias=True),
-            nn.BatchNorm1d(out_features),
-            nn.ReLU(),
-        )
+        self.conv_1 = nn.Sequential(
+                nn.Conv2d(input_featues, output_features, kernel_size=3, padding=1),
+                nn.BatchNorm2d(output_features),
+            )
+        self.relu_1 = nn.ReLU()
+        self.conv_2 = nn.Sequential(
+                nn.Conv2d(output_features, output_features, kernel_size=3, padding=1),
+                nn.BatchNorm2d(output_features),
+            )
+        self.relu_2 = nn.ReLU()
+        self.downsample = nn.Sequential(
+                nn.Conv2d(input_featues, output_features, kernel_size=1, bias=False),
+                nn.BatchNorm2d(output_features),
+            )
 
     def forward(self, x):
-        return self.net(x)
+        out = self.conv_1(x)
+        out = self.relu_1(out)
+        out = self.conv_2(out)
+        identity = self.downsample(x)
+        out += identity
+        out = self.relu_2(out)
+        return out
 
 
-class ratio_net(nn.Module):
-    def __init__(self, in_channels: int=1, theta_dim: int=3):
-        super(ratio_net, self).__init__()
+class ResNet(nn.Module):
+    def __init__(self, input_featues: int=4, theta_features: int=12):
+        super(ResNet, self).__init__()
 
-        self.feature_extraction = nn.Sequential(
-            conv_block(in_channels, 8), # 5
-            conv_block(8, 16), # 2
-        )
-
-        self.log_ratio = nn.Sequential(
-            linear_block(16 * 2 * 2 + theta_dim, 128),
-            # nn.Dropout(p=0.1),
-            linear_block(128, 128),
-            linear_block(128, 64),
-            nn.Linear(64, 1, bias=True),
-        )
-
-        self.sigmoid = nn.Sigmoid()
-
+        self.block_1 = ResidualBlock(input_featues, 16)
+        self.maxpool_1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.block_2 = ResidualBlock(16, 32)
+        self.maxpool_2 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.block_3 = ResidualBlock(32, 64)
+        self.avg_pool1 = nn.AvgPool2d(kernel_size=2, stride=2)
+        self.fc_1 = nn.Sequential(
+                nn.Linear(64* 1* 1 + theta_features, 64, bias=True),
+                nn.BatchNorm1d(64),
+                nn.ReLU(),
+            )
+        self.fc_2 = nn.Sequential(
+                nn.Linear(64, 64, bias=True),
+                nn.BatchNorm1d(64),
+                nn.ReLU(),
+            )
+        self.fc_3 = nn.Sequential(
+                nn.Linear(64, 1, bias=True),
+                nn.Sigmoid(),
+            )
 
     def forward(self, x, theta):
-        x = self.feature_extraction(x)
+        x = self.block_1(x)
+        x = self.maxpool_1(x)
+        x = self.block_2(x)
+        x = self.maxpool_2(x)
+        x = self.block_3(x)
+        x = self.avg_pool1(x)
         x = torch.flatten(x, 1)
         x = torch.cat([x, theta], dim=1)
-        x = self.log_ratio(x)
-        logit = self.sigmoid(x)
+        x = self.fc_1(x)
+        x = self.fc_2(x)
+        logit = self.fc_3(x)
         return logit
