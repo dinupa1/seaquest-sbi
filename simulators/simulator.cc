@@ -191,7 +191,7 @@ void simulator3D::train_samples(TTree* inputs, TTree* prior, TRandom3* generator
 
             for(int kk = 0; kk < 4; kk++) {
                 if(pT_edges[kk] < true_pT && true_pT <= pT_edges[kk+1]) {
-                    hist->Fill(pT, phi, costh, cross_section(theta[kk + 0], theta[kk + 1], theta[kk + 2], true_phi, true_costh));
+                    hist->Fill(pT, phi, costh, cross_section(theta[3 * kk + 0], theta[3 * kk + 1], theta[3 * kk + 2], true_phi, true_costh));
                     // std::cout << "[ ===> " << kk << " , " << pT_edges[kk] << " < " << true_pT << " <= " << pT_edges[kk+1] << " , " << theta[kk + 0] << " , " << theta[kk + 1] << " , " << theta[kk + 2] << std::endl;
                     fill++;
                     break;
@@ -265,7 +265,7 @@ void simulator3D::test_samples(TTree* inputs, TTree* prior, TRandom3* generator)
 
             for(int kk = 0; kk < 4; kk++) {
                 if(pT_edges[kk] < true_pT && true_pT <= pT_edges[kk+1]) {
-                    hist->Fill(pT, phi, costh, cross_section(theta[kk + 0], theta[kk + 1], theta[kk + 2], true_phi, true_costh));
+                    hist->Fill(pT, phi, costh, cross_section(theta[3 * kk + 0], theta[3 * kk + 1], theta[3 * kk + 2], true_phi, true_costh));
                     // std::cout << "[ ===> " << kk << " , " << pT_edges[kk] << " < " << true_pT << " <= " << pT_edges[kk+1] << " , " << theta[kk + 0] << " , " << theta[kk + 1] << " , " << theta[kk + 2] << std::endl;
                     fill++;
                     break;
