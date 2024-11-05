@@ -121,20 +121,19 @@ void plots3D::fill(TTree* tree, TTree* prior) {
             nu_true_error[mm]->Fill(theta[mm + 2], errors[mm + 2]);
 
             if(ii < 100) {
-                lambda_graph->SetPoint(ii, theta[mm + 0], meas[mm + 0]);
-                lambda_graph->SetPointError(ii, 0., errors[mm + 0]);
+                lambda_graph[mm]->SetPoint(ii, theta[mm + 0], meas[mm + 0]);
+                lambda_graph[mm]->SetPointError(ii, 0., errors[mm + 0]);
 
-                mu_graph->SetPoint(ii, theta[mm + 1], meas[mm + 1]);
-                mu_graph->SetPointError(ii, 0., errors[mm + 1]);
+                mu_graph[mm]->SetPoint(ii, theta[mm + 1], meas[mm + 1]);
+                mu_graph[mm]->SetPointError(ii, 0., errors[mm + 1]);
 
-                nu_graph->SetPoint(ii, theta[mm + 2], meas[mm + 2]);
-                nu_graph->SetPointError(ii, 0., errors[mm + 2]);
+                nu_graph[mm]->SetPoint(ii, theta[mm + 2], meas[mm + 2]);
+                nu_graph[mm]->SetPointError(ii, 0., errors[mm + 2]);
             }
 
             if(ii < 5) {
 
                 hist_lambda->Draw("HIST");
-                lambda_fit->Draw("SAME");
 
                 TLine* ll1 = new TLine(lambda_true, 0., lambda_true, hist_lambda->GetMaximum());
                 ll1->SetLineColor(2);
@@ -162,7 +161,6 @@ void plots3D::fill(TTree* tree, TTree* prior) {
                 can->SaveAs(lname.Data());
 
                 hist_mu->Draw("HIST");
-                mu_fit->Draw("SAME");
 
                 TLine* ml1 = new TLine(mu_true, 0., mu_true, hist_mu->GetMaximum());
                 ml1->SetLineColor(2);
@@ -190,7 +188,6 @@ void plots3D::fill(TTree* tree, TTree* prior) {
                 can->SaveAs(mname.Data());
 
                 hist_nu->Draw("HIST");
-                nu_fit->Draw("SAME");
 
                 TLine* nl1 = new TLine(nu_true, 0., nu_true, hist_nu->GetMaximum());
                 nl1->SetLineColor(2);
@@ -231,9 +228,6 @@ void plots3D::fill(TTree* tree, TTree* prior) {
             delete hist_lambda;
             delete hist_mu;
             delete hist_nu;
-            delete lambda_fit;
-            delete mu_fit;
-            delete nu_fit;
         }
     }
 }
