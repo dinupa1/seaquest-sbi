@@ -29,8 +29,8 @@ theta = np.random.uniform([-1.5, -0.6, -0.6, -1.5, -0.6, -0.6, -1.5, -0.6, -0.6,
 
 theta_train_test, theta_prior = train_test_split(theta, test_size=n_prior, shuffle=True)
 
-theta_train_val, theta_test = train_test_split(theta_train_test, test_size=0.1, shuffle=True)
-theta_train, theta_val = train_test_split(theta_train_val, test_size=0.3, shuffle=True)
+theta_train_val, theta_test = train_test_split(theta_train_test, test_size=0.2, shuffle=True)
+theta_train, theta_val = train_test_split(theta_train_val, test_size=0.25, shuffle=True)
 
 theta0_val, theta1_val = train_test_split(theta_val, test_size=0.5, shuffle=True)
 theta0_train, theta1_train = train_test_split(theta_train, test_size=0.5, shuffle=True)
