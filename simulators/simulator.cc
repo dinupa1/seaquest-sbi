@@ -314,16 +314,16 @@ void forward_simulation(int seed) {
 
     // train events
     simulator3D* sim1 = new simulator3D("train_tree");
-    sim1->samples(X_train, theta_train, generator);
+    sim1->train_samples(X_train, theta_train, generator);
     sim1->save();
 
     simulator3D* sim2 = new simulator3D("val_tree");
-    sim2->samples(X_val, theta_val, generator);
+    sim2->train_samples(X_val, theta_val, generator);
     sim2->save();
 
     // test events
     simulator3D* sim3 = new simulator3D("test_tree");
-    sim3->samples(X_test, theta_test, generator);
+    sim3->test_samples(X_test, theta_test, generator);
     sim3->save();
 
     outfile->Write();
