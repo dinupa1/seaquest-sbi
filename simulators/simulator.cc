@@ -158,7 +158,7 @@ simulator3D::simulator3D(TString tname) {
 }
 
 
-void simulator3D::samples(TTree* inputs, TTree* prior, TRandom3* generator) {
+void simulator3D::train_samples(TTree* inputs, TTree* prior, TRandom3* generator) {
 
     double pT, phi, costh, true_pT, true_phi, true_costh;
 
@@ -176,6 +176,80 @@ void simulator3D::samples(TTree* inputs, TTree* prior, TRandom3* generator) {
     for(int ii = 0; ii < prior->GetEntries(); ii++) {
 
         prior->GetEntry(ii);
+
+        int fill = 0;
+        int n_data = 14999;
+
+        TH3D* hist = new TH3D("hist", "", 4, pT_edges, 12, phi_edges, 12, costh_edges);
+
+        for(int jj = 0; jj < inputs->GetEntries(); jj++) {
+
+            if(fill > n_data) break;
+            if(generator->Uniform(-1., 1.) < generator->Uniform(-1., 1.)) continue;
+
+            inputs->GetEntry(jj);
+
+            for(int kk = 0; kk < 4; kk++) {
+                if(pT_edges[kk] < true_pT && true_pT <= pT_edges[kk+1]) {
+                    hist->Fill(pT, phi, costh, cross_section(theta[kk + 0], theta[kk + 1], theta[kk + 2], true_phi, true_costh));
+                    // std::cout << "[ ===> " << kk << " , " << pT_edges[kk] << " < " << true_pT << " <= " << pT_edges[kk+1] << " , " << theta[kk + 0] << " , " << theta[kk + 1] << " , " << theta[kk + 2] << std::endl;
+                    fill++;
+                    break;
+                }
+            }
+        }
+
+        hist->Scale(1./hist->Integral());
+
+        for(int jj = 0; jj < 4; jj++) {
+            for(int kk = 0; kk < 12; kk++) {
+                for(int mm = 0; mm < 12; mm++) {
+                     X[jj][kk][mm] = hist->GetBinContent(jj+1, kk+1, mm+1);
+                }
+            }
+        }
+
+        tree->Fill();
+        delete hist;
+        if(ii%10000==0){std::cout << "[ ===> " << ii << " events are done ]" << std::endl;}
+    }
+}
+
+
+void simulator3D::test_samples(TTree* inputs, TTree* prior, TRandom3* generator) {
+
+    double pT, phi, costh, true_pT, true_phi, true_costh;
+
+    inputs->SetBranchAddress("pT", &pT);
+    inputs->SetBranchAddress("phi", &phi);
+    inputs->SetBranchAddress("costh", &costh);
+    inputs->SetBranchAddress("true_pT", &true_pT);
+    inputs->SetBranchAddress("true_phi", &true_phi);
+    inputs->SetBranchAddress("true_costh", &true_costh);
+
+    // prior->SetBranchAddress("theta0", theta0);
+    prior->SetBranchAddress("theta", theta);
+
+    // draw samples from histograms
+    for(int ii = 0; ii < prior->GetEntries(); ii++) {
+
+        prior->GetEntry(ii);
+
+        if(std::abs(theta[0]) > 1.) continue;
+        if(std::abs(theta[1]) > 0.5) continue;
+        if(std::abs(theta[2]) > 0.5) continue;
+
+        if(std::abs(theta[3]) > 1.) continue;
+        if(std::abs(theta[4]) > 0.5) continue;
+        if(std::abs(theta[5]) > 0.5) continue;
+
+        if(std::abs(theta[6]) > 1.) continue;
+        if(std::abs(theta[7]) > 0.5) continue;
+        if(std::abs(theta[8]) > 0.5) continue;
+
+        if(std::abs(theta[9]) > 1.) continue;
+        if(std::abs(theta[10]) > 0.5) continue;
+        if(std::abs(theta[11]) > 0.5) continue;
 
         int fill = 0;
         int n_data = 14999;

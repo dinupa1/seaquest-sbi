@@ -92,5 +92,5 @@ for i in range(len(theta_test)):
 
 outfile = uproot.recreate("./data/eval.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
-outfile["priors"] = { "theta": theta0_test, }
+outfile["prior"] = { "theta_test": theta0_test, }
 outfile.close()

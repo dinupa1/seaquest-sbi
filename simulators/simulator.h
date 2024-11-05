@@ -42,7 +42,8 @@ class simulator3D {
 public:
     simulator3D(TString tname);
     virtual ~simulator3D(){;}
-    void samples(TTree* inputs, TTree* prior, TRandom3* generator);
+    void train_samples(TTree* inputs, TTree* prior, TRandom3* generator);
+    void test_samples(TTree* inputs, TTree* prior, TRandom3* generator);
     void save(){tree->Write();}
 };
 
