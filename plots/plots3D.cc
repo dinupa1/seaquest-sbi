@@ -83,59 +83,59 @@ void plots3D::fill(TTree* tree, TTree* prior) {
 
             for(int jj = 0; jj < prior->GetEntries(); jj++) {
                 prior->GetEntry(jj);
-                hist_lambda->Fill(theta_test[mm + 0], weights[jj]);
-                hist_mu->Fill(theta_test[mm + 1], weights[jj]);
-                hist_nu->Fill(theta_test[mm + 2], weights[jj]);
+                hist_lambda->Fill(theta_test[3 * mm + 0], weights[jj]);
+                hist_mu->Fill(theta_test[3 * mm + 1], weights[jj]);
+                hist_nu->Fill(theta_test[3 * mm + 2], weights[jj]);
             }
 
             hist_lambda->Scale(1./hist_lambda->Integral());
             hist_mu->Scale(1./hist_mu->Integral());
             hist_nu->Scale(1./hist_nu->Integral());
 
-            meas[mm + 0] = hist_lambda->GetMean();
-            meas[mm + 1] = hist_mu->GetMean();
-            meas[mm + 2] = hist_nu->GetMean();
+            meas[3 * mm + 0] = hist_lambda->GetMean();
+            meas[3 * mm + 1] = hist_mu->GetMean();
+            meas[3 *mm + 2] = hist_nu->GetMean();
 
-            errors[mm + 0] = 2. * hist_lambda->GetStdDev();
-            errors[mm + 1] = 2. * hist_mu->GetStdDev();
-            errors[mm + 2] = 2. * hist_nu->GetStdDev();
+            errors[3 * mm + 0] = 2. * hist_lambda->GetStdDev();
+            errors[3 * mm + 1] = 2. * hist_mu->GetStdDev();
+            errors[3 * mm + 2] = 2. * hist_nu->GetStdDev();
 
-            score[mm + 0] = (theta[mm + 0] - meas[mm + 0])/errors[mm + 0];
-            score[mm + 1] = (theta[mm + 1] - meas[mm + 1])/errors[mm + 1];
-            score[mm + 2] = (theta[mm + 2] - meas[mm + 2])/errors[mm + 2];
+            score[3 * mm + 0] = (theta[3 * mm + 0] - meas[3 * mm + 0])/errors[3 * mm + 0];
+            score[3 * mm + 1] = (theta[3 * mm + 1] - meas[3 * mm + 1])/errors[3 * mm + 1];
+            score[3 * mm + 2] = (theta[3 * mm + 2] - meas[3 * mm + 2])/errors[3 * mm + 2];
 
-            lambda_score[mm]->Fill(score[mm + 0]);
-            mu_score[mm]->Fill(score[mm + 1]);
-            nu_score[mm]->Fill(score[mm + 2]);
+            lambda_score[mm]->Fill(score[3* mm + 0]);
+            mu_score[mm]->Fill(score[3 * mm + 1]);
+            nu_score[mm]->Fill(score[3 * mm + 2]);
 
-            lambda_error[mm]->Fill(errors[mm + 0]);
-            mu_error[mm]->Fill(errors[mm + 1]);
-            nu_error[mm]->Fill(errors[mm + 2]);
+            lambda_error[mm]->Fill(errors[3 * mm + 0]);
+            mu_error[mm]->Fill(errors[3 * mm + 1]);
+            nu_error[mm]->Fill(errors[3 * mm + 2]);
 
-            lambda_true_score[mm]->Fill(theta[mm + 0], score[mm + 0]);
-            mu_true_score[mm]->Fill(theta[mm + 1], score[mm + 1]);
-            nu_true_score[mm]->Fill(theta[mm + 2], score[mm + 2]);
+            lambda_true_score[mm]->Fill(theta[3 * mm + 0], score[3 * mm + 0]);
+            mu_true_score[mm]->Fill(theta[3 * mm + 1], score[3 * mm + 1]);
+            nu_true_score[mm]->Fill(theta[3 * mm + 2], score[3 * mm + 2]);
 
-            lambda_true_error[mm]->Fill(theta[mm + 0], errors[mm + 0]);
-            mu_true_error[mm]->Fill(theta[mm + 1], errors[mm + 1]);
-            nu_true_error[mm]->Fill(theta[mm + 2], errors[mm + 2]);
+            lambda_true_error[mm]->Fill(theta[3 * mm + 0], errors[3 * mm + 0]);
+            mu_true_error[mm]->Fill(theta[3 * mm + 1], errors[3 * mm + 1]);
+            nu_true_error[mm]->Fill(theta[3 * mm + 2], errors[3 * mm + 2]);
 
             if(ii < 100) {
-                lambda_graph[mm]->SetPoint(ii, theta[mm + 0], meas[mm + 0]);
-                lambda_graph[mm]->SetPointError(ii, 0., errors[mm + 0]);
+                lambda_graph[mm]->SetPoint(ii, theta[3 * mm + 0], meas[3 * mm + 0]);
+                lambda_graph[mm]->SetPointError(ii, 0., errors[3 * mm + 0]);
 
-                mu_graph[mm]->SetPoint(ii, theta[mm + 1], meas[mm + 1]);
-                mu_graph[mm]->SetPointError(ii, 0., errors[mm + 1]);
+                mu_graph[mm]->SetPoint(ii, theta[3 * mm + 1], meas[3 * mm + 1]);
+                mu_graph[mm]->SetPointError(ii, 0., errors[3 * mm + 1]);
 
-                nu_graph[mm]->SetPoint(ii, theta[mm + 2], meas[mm + 2]);
-                nu_graph[mm]->SetPointError(ii, 0., errors[mm + 2]);
+                nu_graph[mm]->SetPoint(ii, theta[3 * mm + 2], meas[3 * mm + 2]);
+                nu_graph[mm]->SetPointError(ii, 0., errors[3 * mm + 2]);
             }
 
             if(ii < 5) {
 
                 hist_lambda->Draw("HIST");
 
-                TLine* ll1 = new TLine(theta[mm + 0], 0., theta[mm + 0], hist_lambda->GetMaximum());
+                TLine* ll1 = new TLine(theta[3 * mm + 0], 0., theta[3 * mm + 0], hist_lambda->GetMaximum());
                 ll1->SetLineColor(2);
                 ll1->SetLineWidth(2);
                 ll1->SetLineStyle(2);
@@ -162,7 +162,7 @@ void plots3D::fill(TTree* tree, TTree* prior) {
 
                 hist_mu->Draw("HIST");
 
-                TLine* ml1 = new TLine(theta[mm + 1], 0., theta[mm + 1], hist_mu->GetMaximum());
+                TLine* ml1 = new TLine(theta[3 * mm + 1], 0., theta[3 * mm + 1], hist_mu->GetMaximum());
                 ml1->SetLineColor(2);
                 ml1->SetLineWidth(2);
                 ml1->SetLineStyle(2);
@@ -189,7 +189,7 @@ void plots3D::fill(TTree* tree, TTree* prior) {
 
                 hist_nu->Draw("HIST");
 
-                TLine* nl1 = new TLine(theta[mm + 2], 0., theta[mm + 2], hist_nu->GetMaximum());
+                TLine* nl1 = new TLine(theta[3 * mm + 2], 0., theta[3 * mm + 2], hist_nu->GetMaximum());
                 nl1->SetLineColor(2);
                 nl1->SetLineWidth(2);
                 nl1->SetLineStyle(2);
