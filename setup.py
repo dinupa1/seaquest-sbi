@@ -6,3 +6,7 @@ ROOT.gSystem.ChangeDirectory("./simulators/")
 ROOT.gSystem.CompileMacro("simulator.cc", "kfgO", "lib_simulator")
 ROOT.gSystem.ChangeDirectory("../")
 
+ROOT.gSystem.ChangeDirectory("./plots/")
+ROOT.gSystem.CompileMacro("plots.cc", "kfgO", "lib_plots")
+ROOT.gSystem.CompileMacro("plots3D.cc", "kfgO", "lib_plots3D")
+ROOT.gSystem.ChangeDirectory("../")

@@ -38,8 +38,8 @@ torch.backends.cudnn.benchmark = False
 batch_size: int = 64
 
 tree = {
-    "theta":[],
-    "weights": [],
+        "theta":[],
+        "weights": [],
     }
 
 
@@ -82,7 +82,7 @@ tr.fit()
 # test data
 #
 
-for i in range(len(theta_test)):
+for i in range(100):
     X_test_array = np.array([X_test[i] for j in range(len(theta0_test))])
     tree["theta"].append(theta_test[i])
     tree["weights"].append(test_ratio_model(model, X_test_array, theta0_test, batch_size=32, device=dvc))
