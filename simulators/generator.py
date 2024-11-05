@@ -36,7 +36,7 @@ theta0_val, theta1_val = train_test_split(theta_val, test_size=0.5, shuffle=True
 theta0_train, theta1_train = train_test_split(theta_train, test_size=0.5, shuffle=True)
 
 print(f"[ ===> prior size {theta_prior.shape} ]")
-print(f"[ ===> test size {theta1_test.shape} ]")
+print(f"[ ===> test size {theta_test.shape} ]")
 print(f"[ ===> val size {theta0_val.shape}, {theta1_val.shape} ]")
 print(f"[ ===> train size {theta0_train.shape}, {theta1_train.shape} ]")
 
