@@ -71,12 +71,11 @@ void plots3D::fill(TTree* tree, TTree* prior) {
 
     prior->SetBranchAddress("theta_test", theta_test);
 
+    for(int ii = 0; ii < tree->GetEntries(); ii++) {
 
-    for(int mm = 0; mm < 4; mm++) {
+        tree->GetEntry(ii);
 
-        for(int ii = 0; ii < tree->GetEntries(); ii++) {
-
-            tree->GetEntry(ii);
+        for(int mm = 0; mm < 4; mm++) {
 
             TH1D* hist_lambda = new TH1D("hist_lambda", "; #lambda; p(x | #lambda)", 30, -1.5, 1.5);
             TH1D* hist_mu = new TH1D("hist_mu", "; #mu; p(x | #mu)", 30, -0.6, 0.6);
