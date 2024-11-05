@@ -67,6 +67,7 @@ void plots3D::fill(TTree* tree, TTree* prior) {
     double theta_test[12];
 
     tree->SetBranchAddress("theta", theta);
+    tree->SetBranchAddress("weights", weights);
 
     prior->SetBranchAddress("theta_test", theta_test);
 
@@ -82,7 +83,7 @@ void plots3D::fill(TTree* tree, TTree* prior) {
             TH1D* hist_nu = new TH1D("hist_nu", "; #nu; p(x | #nu)", 30, -0.6, 0.6);
 
             for(int jj = 0; jj < prior->GetEntries(); jj++) {
-                priors->GetEntry(jj);
+                prior->GetEntry(jj);
                 hist_lambda->Fill(theta_test[mm + 0], weights[jj]);
                 hist_mu->Fill(theta_test[mm + 1], weights[jj]);
                 hist_nu->Fill(theta_test[mm + 2], weights[jj]);
@@ -135,7 +136,7 @@ void plots3D::fill(TTree* tree, TTree* prior) {
 
                 hist_lambda->Draw("HIST");
 
-                TLine* ll1 = new TLine(lambda_true, 0., lambda_true, hist_lambda->GetMaximum());
+                TLine* ll1 = new TLine(theta[mm + 0], 0., theta[mm + 0], hist_lambda->GetMaximum());
                 ll1->SetLineColor(2);
                 ll1->SetLineWidth(2);
                 ll1->SetLineStyle(2);
@@ -162,7 +163,7 @@ void plots3D::fill(TTree* tree, TTree* prior) {
 
                 hist_mu->Draw("HIST");
 
-                TLine* ml1 = new TLine(mu_true, 0., mu_true, hist_mu->GetMaximum());
+                TLine* ml1 = new TLine(theta[mm + 1], 0., theta[mm + 1], hist_mu->GetMaximum());
                 ml1->SetLineColor(2);
                 ml1->SetLineWidth(2);
                 ml1->SetLineStyle(2);
@@ -189,7 +190,7 @@ void plots3D::fill(TTree* tree, TTree* prior) {
 
                 hist_nu->Draw("HIST");
 
-                TLine* nl1 = new TLine(nu_true, 0., nu_true, hist_nu->GetMaximum());
+                TLine* nl1 = new TLine(theta[mm + 2], 0., theta[mm + 2], hist_nu->GetMaximum());
                 nl1->SetLineColor(2);
                 nl1->SetLineWidth(2);
                 nl1->SetLineStyle(2);
