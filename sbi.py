@@ -63,7 +63,7 @@ X_test = test_tree["X"].array().to_numpy()
 theta_test = test_tree["theta"].array().to_numpy()
 
 theta_prior = uproot.open("./data/generator.root:theta_prior")
-theta0_test = theta_prior["theta0"].to_numpy()
+theta0_test = theta_prior["theta0"].array().to_numpy()
 
 ds_train = ratio_dataset(X_train, theta_train, theta0_train)
 ds_val = ratio_dataset(X_val, theta_val, theta0_val)

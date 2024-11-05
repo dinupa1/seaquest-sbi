@@ -1,12 +1,7 @@
 import ROOT
 
-ROOT.gSystem.cd("./plots")
-
-ROOT.gSystem.CompileMacro("plots.cc", "kfgO", "lib_plots")
-
-ROOT.gSystem.cd("../")
-
-ROOT.gInterpreter.ProcessLine('#include "./plots/plots.h"')
 ROOT.gSystem.Load("./plots/lib_plots.so")
+ROOT.gSystem.Load("./plots/lib_plots3D.so")
 
 from ROOT import plots2D
+from ROOT import plots3D
