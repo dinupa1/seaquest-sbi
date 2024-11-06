@@ -22,7 +22,7 @@ class simulator {
     double theta[3];
     double theta0[3];
     TTree* tree;
-    int n_data = 3649;
+    int n_data = 15000;
 public:
     simulator(TString tname);
     virtual ~simulator(){;}

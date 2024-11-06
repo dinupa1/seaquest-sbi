@@ -12,7 +12,7 @@ np.random.seed(seed)
 
 n_data:int = 2000000
 n_theta:int = 3
-n_prior:int = 3750
+n_prior:int = 15000
 
 print("[ ===> train test split ]")
 
