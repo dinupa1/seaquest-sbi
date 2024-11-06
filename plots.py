@@ -2,7 +2,7 @@ import numpy as np
 
 import ROOT
 
-from plots import plots3D
+from plots import plots
 
 ROOT.gStyle.SetOptFit(111);
 

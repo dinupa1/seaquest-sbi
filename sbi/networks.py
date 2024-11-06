@@ -21,30 +21,30 @@ from sklearn.utils import resample
 
 
 class ResidualBlock(nn.Module):
-    def __init__(self, input_featues: int=4, output_features: int = 8):
+    def __init__(self, planes: int = 16):
         super(ResidualBlock, self).__init__()
 
-        self.expantion: int = 2
+        self.expantion: int = 4
 
         self.conv_1 = nn.Sequential(
-                nn.Conv2d(input_featues, output_features, kernel_size=1, padding=0),
-                nn.BatchNorm2d(output_features),
+                nn.Conv2d(planes, planes, kernel_size=1, padding=0),
+                nn.BatchNorm2d(planes),
             )
         self.relu_1 = nn.ReLU()
         self.conv_2 = nn.Sequential(
-                nn.Conv2d(output_features, output_features, kernel_size=3, padding=1),
-                nn.BatchNorm2d(output_features),
+                nn.Conv2d(planes, planes, kernel_size=3, padding=1),
+                nn.BatchNorm2d(planes),
             )
         self.relu_2 = nn.ReLU()
         self.conv_3 = nn.Sequential(
-                nn.Conv2d(output_features, output_features * self.expantion, kernel_size=1, padding=0),
-                nn.BatchNorm2d(output_features* self.expantion),
+                nn.Conv2d(planes, planes * self.expantion, kernel_size=1, padding=0),
+                nn.BatchNorm2d(planes* self.expantion),
 
             )
         self.relu_3 = nn.ReLU()
         self.downsample = nn.Sequential(
-                nn.Conv2d(input_featues, output_features * self.expantion, kernel_size=1, bias=False),
-                nn.BatchNorm2d(output_features * self.expantion),
+                nn.Conv2d(planes, planes * self.expantion, kernel_size=1, bias=False),
+                nn.BatchNorm2d(planes * self.expantion),
             )
 
     def forward(self, x):
@@ -63,12 +63,17 @@ class ResNet(nn.Module):
     def __init__(self, input_featues: int=1, theta_features: int=3):
         super(ResNet, self).__init__()
 
-        self.block_1 = ResidualBlock(input_featues, 8)
+        self.block_0 = nn.Sequential(
+                nn.Conv2d(input_featues, 4, kernel_size=3, padding=1),
+                nn.BatchNorm2d(4),
+                nn.ReLU(),
+            )
+        self.block_1 = ResidualBlock(4)
         self.avgpool_1 = nn.AvgPool2d(kernel_size=2, stride=2)
-        self.block_2 = ResidualBlock(8, 16)
-        self.avgpool_1 = nn.AvgPool2d(kernel_size=2, stride=2)
+        self.block_2 = ResidualBlock(16)
+        self.avgpool_2 = nn.AvgPool2d(kernel_size=2, stride=2)
         self.fc_1 = nn.Sequential(
-                nn.Linear(32 * 2 * 2 + theta_features, 64, bias=True),
+                nn.Linear(64 * 2 * 2 + theta_features, 64, bias=True),
                 nn.BatchNorm1d(64),
                 nn.ReLU(),
             )
@@ -83,6 +88,7 @@ class ResNet(nn.Module):
             )
 
     def forward(self, x, theta):
+        x = self.block_0(x)
         x = self.block_1(x)
         x = self.avgpool_1(x)
         x = self.block_2(x)
