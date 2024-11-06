@@ -1,6 +1,6 @@
 import numpy as np
 
-from simulators import simulator3D
+from simulators import simulator
 from simulators import forward_simulation
 
 seed: int = 42

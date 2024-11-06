@@ -84,7 +84,6 @@ void simulator::test_samples(TTree* inputs, TTree* prior, TRandom3* generator) {
     inputs->SetBranchAddress("true_phi", &true_phi);
     inputs->SetBranchAddress("true_costh", &true_costh);
 
-    prior->SetBranchAddress("theta0", theta0);
     prior->SetBranchAddress("theta", theta);
 
     // draw samples from histograms

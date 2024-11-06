@@ -38,15 +38,10 @@ class plots {
     TH2D* mu_true_error;
     TH2D* nu_true_error;
 
-    TH1D* lambda_chisq;
-    TH1D* mu_chisq;
-    TH1D* nu_chisq;
-
     TCanvas* can;
 public:
     double meas[3];
     double errors[3];
-    double chisq[3];
     double score[3];
     plots();
     virtual ~plots(){;}

@@ -11,6 +11,6 @@ tree = infile.Get("tree")
 prior = infile.Get("prior")
 
 
-fig = plots3D()
+fig = plots()
 fig.fill(tree, prior)
-fig.plots()
+fig.plot()
