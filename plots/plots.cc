@@ -167,7 +167,7 @@ void plots::fill(TTree* tree, TTree* priors) {
 
             hist_nu->Draw("HIST");
 
-            TLine* nl1 = new TLine(theta[2], 0., theta[1], hist_nu->GetMaximum());
+            TLine* nl1 = new TLine(theta[2], 0., theta[2], hist_nu->GetMaximum());
             nl1->SetLineColor(2);
             nl1->SetLineWidth(2);
             nl1->SetLineStyle(2);

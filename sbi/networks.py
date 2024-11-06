@@ -24,21 +24,21 @@ class ResidualBlock(nn.Module):
     def __init__(self, planes: int = 16):
         super(ResidualBlock, self).__init__()
 
-        self.expantion: int = 4
+        self.expantion = 2
 
         self.conv_1 = nn.Sequential(
-                nn.Conv2d(planes, planes, kernel_size=1, padding=0),
+                nn.Conv2d(planes, planes, kernel_size=1, padding=0, bias=False),
                 nn.BatchNorm2d(planes),
             )
         self.relu_1 = nn.ReLU()
         self.conv_2 = nn.Sequential(
-                nn.Conv2d(planes, planes, kernel_size=3, padding=1),
+                nn.Conv2d(planes, planes, kernel_size=3, padding=1, bias=False),
                 nn.BatchNorm2d(planes),
             )
         self.relu_2 = nn.ReLU()
         self.conv_3 = nn.Sequential(
-                nn.Conv2d(planes, planes * self.expantion, kernel_size=1, padding=0),
-                nn.BatchNorm2d(planes* self.expantion),
+                nn.Conv2d(planes, planes * self.expantion, kernel_size=1, padding=0, bias=False),
+                nn.BatchNorm2d(planes * self.expantion),
 
             )
         self.relu_3 = nn.ReLU()
@@ -63,39 +63,46 @@ class ResNet(nn.Module):
     def __init__(self, input_featues: int=1, theta_features: int=3):
         super(ResNet, self).__init__()
 
-        self.block_0 = nn.Sequential(
-                nn.Conv2d(input_featues, 4, kernel_size=3, padding=1),
-                nn.BatchNorm2d(4),
+        self.planes = 4
+
+        self.layer_0 = nn.Sequential(
+                nn.Conv2d(input_featues, self.planes, kernel_size=3, padding=1),
+                nn.BatchNorm2d(self.planes),
                 nn.ReLU(),
+                nn.MaxPool2d(kernel_size=2, stride=2),
             )
-        self.block_1 = ResidualBlock(4)
-        self.avgpool_1 = nn.AvgPool2d(kernel_size=2, stride=2)
-        self.block_2 = ResidualBlock(16)
-        self.avgpool_2 = nn.AvgPool2d(kernel_size=2, stride=2)
-        self.fc_1 = nn.Sequential(
-                nn.Linear(64 * 2 * 2 + theta_features, 64, bias=True),
+        self.layer_1 = nn.Sequential(
+                ResidualBlock(self.planes),
+                ResidualBlock(2 * self.planes),
+                ResidualBlock(4 * self.planes),
+                ResidualBlock(8 * self.planes),
+                nn.AvgPool2d(kernel_size=2, stride=2)
+            )
+        self.fc = nn.Sequential(
+                nn.Linear(16 * self.planes * 2 * 2 + theta_features, 64, bias=True),
                 nn.BatchNorm1d(64),
                 nn.ReLU(),
-            )
-        self.fc_2 = nn.Sequential(
                 nn.Linear(64, 64, bias=True),
                 nn.BatchNorm1d(64),
                 nn.ReLU(),
-            )
-        self.fc_3 = nn.Sequential(
                 nn.Linear(64, 1, bias=True),
                 nn.Sigmoid(),
             )
 
     def forward(self, x, theta):
-        x = self.block_0(x)
-        x = self.block_1(x)
-        x = self.avgpool_1(x)
-        x = self.block_2(x)
-        x = self.avgpool_2(x)
+        x = self.layer_0(x)
+        x = self.layer_1(x)
         x = torch.flatten(x, 1)
         x = torch.cat([x, theta], dim=1)
-        x = self.fc_1(x)
-        x = self.fc_2(x)
-        logit = self.fc_3(x)
+        logit = self.fc(x)
         return logit
+
+
+
+m = ResNet()
+x = torch.randn(5, 1, 10, 10)
+theta = torch.randn(5, 3)
+print(m)
+total_trainable_params = sum(p.numel() for p in m.parameters() if p.requires_grad)
+print(f"total trainable params: {total_trainable_params}")
+print(m(x, theta))
