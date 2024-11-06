@@ -15,7 +15,7 @@
 
 #include "plots.h"
 
-plots2D::plots2D() {
+plots::plots() {
 
     lambda_score = new TH1D("lambda_score", "; #frac{#lambda_{true} - #lambda_{meas}}{#lambda_{error}};", 30, -5., 5.);
     mu_score = new TH1D("mu_score", "; #frac{#mu_{true} - #mu_{meas}}{#mu_{error}};", 30, -5., 5.);
@@ -45,7 +45,7 @@ plots2D::plots2D() {
 }
 
 
-void plots2D::fill(TTree* tree, TTree* priors) {
+void plots::fill(TTree* tree, TTree* priors) {
 
     double lambda_true, mu_true, nu_true;
     double weights[15000];
@@ -238,7 +238,7 @@ void plots2D::fill(TTree* tree, TTree* priors) {
 }
 
 
-void plots2D::plots() {
+void plots::plot() {
 
     lambda_score->Draw("HIST");
     can->Update();

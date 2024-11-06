@@ -56,11 +56,9 @@ class ResNet(nn.Module):
         self.block_1 = ResidualBlock(input_featues, 16)
         self.maxpool_1 = nn.MaxPool2d(kernel_size=2, stride=2)
         self.block_2 = ResidualBlock(16, 32)
-        self.maxpool_2 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.block_3 = ResidualBlock(32, 64)
         self.avg_pool1 = nn.AvgPool2d(kernel_size=2, stride=2)
         self.fc_1 = nn.Sequential(
-                nn.Linear(64* 1* 1 + theta_features, 64, bias=True),
+                nn.Linear(32 * 2 * 2 + theta_features, 64, bias=True),
                 nn.BatchNorm1d(64),
                 nn.ReLU(),
             )
@@ -78,8 +76,6 @@ class ResNet(nn.Module):
         x = self.block_1(x)
         x = self.maxpool_1(x)
         x = self.block_2(x)
-        x = self.maxpool_2(x)
-        x = self.block_3(x)
         x = self.avg_pool1(x)
         x = torch.flatten(x, 1)
         x = torch.cat([x, theta], dim=1)

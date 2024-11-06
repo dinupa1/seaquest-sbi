@@ -17,7 +17,7 @@
 #include <iostream>
 
 
-class plots2D {
+class plots {
     TH1D* lambda_score;
     TH1D* mu_score;
     TH1D* nu_score;
@@ -48,10 +48,10 @@ public:
     double errors[3];
     double chisq[3];
     double score[3];
-    plots2D();
-    virtual ~plots2D(){;}
+    plots();
+    virtual ~plots(){;}
     void fill(TTree* tree, TTree* prior);
-    void plots();
+    void plot();
 };
 
 #endif /* _PLOTS__H_ */
