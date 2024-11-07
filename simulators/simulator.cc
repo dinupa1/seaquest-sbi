@@ -33,6 +33,7 @@ reader::reader(TFile* infile, TString tname) {
 
 void reader::fill(double theta[3], TH2D* hist, double threshold, TRandom3* generator) {
 
+    hist->Reset();
     int n_fill = 0;
 
     for(int ii = 0; ii < n_events; ii++) {
@@ -124,7 +125,6 @@ void simulator::samples(int n_train, int n_val, int n_test) {
 
         // std::cout << "*****************" << std::endl;
 
-        train_hist->Reset();
         double threshold = generator_0->Uniform(0., 0.5);
         train_reader->fill(theta, train_hist, threshold, generator_1);
         read(X, train_hist);
@@ -137,14 +137,13 @@ void simulator::samples(int n_train, int n_val, int n_test) {
 
     TH2D* val_hist = new TH2D("val_hist", "", 10, -pi, pi, 10, -0.4, 0.4);
 
-    for(int ii = 0; ii < n_test; ii++) {
+    for(int ii = 0; ii < n_val; ii++) {
 
         prior(theta_0, generator_0, -1.5, 1.5, -0.6, 0.6, -0.6, 0.6);
         prior(theta, generator_1, -1.5, 1.5, -0.6, 0.6, -0.6, 0.6);
 
         // std::cout << "*****************" << std::endl;
 
-        val_hist->Reset();
         double threshold = generator_0->Uniform(0., 0.5);
         val_reader->fill(theta, val_hist, threshold, generator_1);
         read(X, val_hist);
@@ -157,13 +156,12 @@ void simulator::samples(int n_train, int n_val, int n_test) {
 
     TH2D* test_hist = new TH2D("test_hist", "", 10, -pi, pi, 10, -0.4, 0.4);
 
-    for(int ii = 0; ii < n_train; ii++) {
+    for(int ii = 0; ii < n_test; ii++) {
 
         prior(theta, generator_1, -1., 1., -0.5, 0.5, -0.5, 0.5);
 
         // std::cout << "*****************" << std::endl;
 
-        test_hist->Reset();
         double threshold = generator_0->Uniform(0., 0.5);
         test_reader->fill(theta, test_hist, threshold, generator_1);
         read(X, test_hist);
