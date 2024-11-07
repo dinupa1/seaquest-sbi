@@ -17,7 +17,7 @@ double cross_section(double lambda, double mu, double nu, double phi, double cos
 }
 
 
-reader::reader(TFile* infile, TString tname) {
+sim_reader::sim_reader(TFile* infile, TString tname) {
     tree = (TTree*)infile->Get(tname.Data());
 
     n_events = tree->GetEntries();
@@ -31,7 +31,7 @@ reader::reader(TFile* infile, TString tname) {
 }
 
 
-void reader::fill(double theta[3], TH2D* hist, double threshold, TRandom3* generator) {
+void sim_reader::fill(double theta[3], TH2D* hist, double threshold, TRandom3* generator) {
 
     hist->Reset();
     int n_fill = 0;
@@ -55,9 +55,9 @@ simulator::simulator() {
 
     TFile* inputs = TFile::Open("./data/generator.root", "read");
 
-    train_reader = new reader(inputs, "X_train");
-    val_reader = new reader(inputs, "X_val");
-    test_reader = new reader(inputs, "X_test");
+    train_reader = new sim_reader(inputs, "X_train");
+    val_reader = new sim_reader(inputs, "X_val");
+    test_reader = new sim_reader(inputs, "X_test");
 
     outputs = new TFile("./data/outputs.root", "recreate");
 

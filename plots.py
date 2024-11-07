@@ -1,16 +1,9 @@
 import numpy as np
 
-import ROOT
-
-from plots import plots
-
-ROOT.gStyle.SetOptFit(111);
-
-infile = ROOT.TFile.Open("./data/eval.root", "read")
-tree = infile.Get("tree")
-prior = infile.Get("prior")
+from plots import plots_reader
+from plots import ratio_plots
 
 
-fig = plots()
-fig.fill(tree, prior)
-fig.plot()
+rp = ratio_plots()
+rp.fill()
+rp.plot()

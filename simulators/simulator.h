@@ -19,7 +19,7 @@ double cross_section(double lambda, double mu, double nu, double phi, double cos
 // void forward_simulation(int seed);
 
 
-class reader {
+class sim_reader {
     double pT;
     double phi;
     double costh;
@@ -29,16 +29,16 @@ class reader {
     TTree* tree;
     int n_events;
 public:
-    reader(TFile* inputs, TString tname);
-    virtual ~reader(){};
+    sim_reader(TFile* inputs, TString tname);
+    virtual ~sim_reader(){};
     void fill(double theta[3], TH2D* hist, double threshold, TRandom3* generator);
 };
 
 
 class simulator {
-    reader* train_reader;
-    reader* val_reader;
-    reader* test_reader;
+    sim_reader* train_reader;
+    sim_reader* val_reader;
+    sim_reader* test_reader;
     TRandom3* generator_0;
     TRandom3* generator_1;
 public:

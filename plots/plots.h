@@ -16,8 +16,34 @@
 #include <TSystem.h>
 #include <iostream>
 
+double pi = TMath::Pi();
+TCanvas* can;
 
-class plots {
+class plots_reader {
+    TH1D* hist_lambda;
+    TH1D* hist_mu;
+    TH1D* hist_nu;
+    TGraphErrors* lambda_meas;
+    TGraphErrors* mu_meas;
+    TGraphErrors* nu_meas;
+public:
+    TTree* prior;
+    int n_prior;
+    double theta_0[3];
+    double meas[3];
+    double error[3];
+    double score[3];
+    plots_reader(TFile* inputs);
+    virtual ~plots_reader(){;}
+    void fill(double theta[3], double weights[15000]);
+    void plot_one(double theta, double meas, double error, TH1D* hist, TGraphErrors* graph, TString pname);
+    void plot(double theta[3], int ii);
+    void histograms(double theta[3], TH1D* lambda_score, TH1D* mu_score, TH1D* nu_score, TH1D* lambda_error, TH1D* mu_error, TH1D* nu_error, TH2D* lambda_true_score, TH2D* mu_true_score, TH2D* nu_true_score, TH2D* lambda_true_error, TH2D* mu_true_error, TH2D* nu_true_error);
+    void graphs(double theta[3], TGraphErrors* lambda_graph, TGraphErrors* mu_graph, TGraphErrors* nu_graph, int ii);
+};
+
+
+class ratio_plots {
     TH1D* lambda_score;
     TH1D* mu_score;
     TH1D* nu_score;
@@ -37,15 +63,18 @@ class plots {
     TH2D* lambda_true_error;
     TH2D* mu_true_error;
     TH2D* nu_true_error;
-
-    TCanvas* can;
 public:
-    double meas[3];
-    double errors[3];
-    double score[3];
-    plots();
-    virtual ~plots(){;}
-    void fill(TTree* tree, TTree* prior);
+    double theta[3];
+    double weights[15000];
+    TTree* tree;
+    int n_events;
+    plots_reader* rdr;
+    ratio_plots();
+    virtual ~ratio_plots(){;}
+    void fill();
+    void plot_hist1D(TH1D* hist, TString pname);
+    void plot_hist2D(TH2D* hist, TString pname);
+    void plot_graph(TGraphErrors* graph, double xmin, double xmax, TString gname, TString tname, TString pname);
     void plot();
 };
 
