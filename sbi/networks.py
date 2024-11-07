@@ -81,8 +81,11 @@ class ratio_net(nn.Module):
                 residual_block(8 * self.planes),
                 nn.AvgPool2d(kernel_size=2, stride=2),
             )
-        self.fc = nn.Sequential(
+        self.layer_2 = nn.Sequential(
                 nn.Linear(16 * self.planes * 1 * 1 + theta_dim, self.hidded_dim, bias=True),
+                nn.BatchNorm1d(self.hidded_dim),
+                nn.ReLU(),
+                nn.Linear(self.hidded_dim, self.hidded_dim, bias=True),
                 nn.BatchNorm1d(self.hidded_dim),
                 nn.ReLU(),
                 nn.Linear(self.hidded_dim, self.hidded_dim, bias=True),
@@ -97,7 +100,7 @@ class ratio_net(nn.Module):
         x = self.layer_1(x)
         x = torch.flatten(x, 1)
         x = torch.cat([x, theta], dim=1)
-        logit = self.fc(x)
+        logit = self.layer_2(x)
         return logit
 
 
