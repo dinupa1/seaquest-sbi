@@ -36,7 +36,7 @@ void reader::fill(double theta[3], TH2D* hist, double threshold, TRandom3* gener
     int n_fill = 0;
 
     for(int ii = 0; ii < n_events; ii++) {
-        if(fill == n_data) break;
+        if(n_fill == n_data) break;
         if(generator->Uniform(0., 1.) < threshold) continue;
         tree->GetEntry(ii);
         hist->Fill(phi, costh, cross_section(theta[0], theta[1], theta[2], true_phi, true_costh));
