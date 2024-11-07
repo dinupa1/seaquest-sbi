@@ -60,13 +60,15 @@ class residual_block(nn.Module):
 
 
 class ratio_net(nn.Module):
-    def __init__(self, input_featues: int=1, theta_features: int=3):
+    def __init__(self, input_dim:int = 1, theta_dim:int = 3):
         super(ratio_net, self).__init__()
 
-        self.planes = 4
+        self.planes:int = 5
+        self.hidded_dim:int = 50
+        self.output_dim:int = 1
 
         self.layer_0 = nn.Sequential(
-                nn.Conv2d(input_featues, self.planes, kernel_size=3, padding=1),
+                nn.Conv2d(input_dim, self.planes, kernel_size=3, padding=1),
                 nn.BatchNorm2d(self.planes),
                 nn.ReLU(),
                 nn.MaxPool2d(kernel_size=2, stride=2),
@@ -74,18 +76,19 @@ class ratio_net(nn.Module):
         self.layer_1 = nn.Sequential(
                 residual_block(self.planes),
                 residual_block(2 * self.planes),
+                nn.MaxPool2d(kernel_size=2, stride=2),
                 residual_block(4 * self.planes),
                 residual_block(8 * self.planes),
-                nn.AvgPool2d(kernel_size=2, stride=2)
+                nn.AvgPool2d(kernel_size=2, stride=2),
             )
         self.fc = nn.Sequential(
-                nn.Linear(16 * self.planes * 2 * 2 + theta_features, 64, bias=True),
-                nn.BatchNorm1d(64),
+                nn.Linear(16 * self.planes * 1 * 1 + theta_dim, self.hidded_dim, bias=True),
+                nn.BatchNorm1d(self.hidded_dim),
                 nn.ReLU(),
-                nn.Linear(64, 64, bias=True),
-                nn.BatchNorm1d(64),
+                nn.Linear(self.hidded_dim, self.hidded_dim, bias=True),
+                nn.BatchNorm1d(self.hidded_dim),
                 nn.ReLU(),
-                nn.Linear(64, 1, bias=True),
+                nn.Linear(self.hidded_dim, 1, bias=True),
                 nn.Sigmoid(),
             )
 
