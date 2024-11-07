@@ -64,15 +64,15 @@ void plots_reader::plot_one(double theta, double meas, double error, TH1D* hist,
 
     double y_max = hist->GetMaximum();
 
-    graph->SetPoint(0, theta, 0.75* y_max);
+    hist->Scale(1./y_max);
+
+    graph->SetPoint(0, theta, 0.75);
     graph->SetPointError(0, error, 0.);
 
     graph->SetMarkerColor(4);
     graph->SetMarkerStyle(21);
 
-    hist->Scale(1./y_max);
-
-    TLine* ll = new TLine(theta, 0., theta, y_max);
+    TLine* ll = new TLine(theta, 0., theta, 1.);
     ll->SetLineColor(2);
     ll->SetLineWidth(2);
     ll->SetLineStyle(2);

@@ -16,7 +16,6 @@
 #include <TSystem.h>
 #include <iostream>
 
-double pi = TMath::Pi();
 TCanvas* can;
 
 class plots_reader {

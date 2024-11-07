@@ -35,7 +35,7 @@ torch.cuda.manual_seed(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-batch_size: int = 64
+batch_size: int = 50000
 
 tree = {
         "theta":[],
@@ -85,7 +85,7 @@ tr.fit()
 for i in range(100):
     X_test_array = np.array([X_test[i] for j in range(len(theta_0_test))])
     tree["theta"].append(theta_test[i])
-    tree["weights"].append(test_ratio_model(model, X_test_array, theta_0_test, batch_size=32, device=dvc))
+    tree["weights"].append(test_ratio_model(model, X_test_array, theta_0_test, batch_size=20000, device=dvc))
 
     if i%1000 == 0:
         print(f"[===> {i} tests are done ]")
