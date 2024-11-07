@@ -99,10 +99,10 @@ class ResNet(nn.Module):
 
 
 
-m = ResNet()
-x = torch.randn(5, 1, 10, 10)
-theta = torch.randn(5, 3)
-print(m)
-total_trainable_params = sum(p.numel() for p in m.parameters() if p.requires_grad)
-print(f"total trainable params: {total_trainable_params}")
-print(m(x, theta))
+# m = ResNet()
+# x = torch.randn(5, 1, 10, 10)
+# theta = torch.randn(5, 3)
+# print(m)
+# total_trainable_params = sum(p.numel() for p in m.parameters() if p.requires_grad)
+# print(f"total trainable params: {total_trainable_params}")
+# print(m(x, theta))

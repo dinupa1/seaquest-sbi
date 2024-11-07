@@ -26,7 +26,7 @@ events = save.arrays(branches)
 
 events1 = events[(events.mass > 4.5) & (events.mass < 9.) & (events.xF > 0.) & (events.xF < 1.) & (np.abs(events.costh) < 0.4) & (events.occuD1 < 300.)]
 
-X_train_val, X_test = train_test_split(events1.to_numpy(), test_size=0.3, shuffle=True)
+X_train_val, X_test = train_test_split(events1.to_numpy(), test_size=0.2, shuffle=True)
 X_train, X_val = train_test_split(X_train_val, test_size=0.5, shuffle=True)
 
 theta = np.random.uniform([-1.5, -0.6, -0.6], [1.5, 0.6, 0.6], [n_data, n_theta])
