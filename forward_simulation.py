@@ -1,9 +1,12 @@
 import numpy as np
 
+from simulators import reader
 from simulators import simulator
-from simulators import forward_simulation
 
-seed: int = 42
+n_train: int = 500000
+n_val: int = 100000
+n_test: int = 20000
 
-
-forward_simulation(seed)
+sim = simulator()
+sim.samples(n_train, n_val, n_test)
+sim.save()

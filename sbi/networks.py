@@ -20,9 +20,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
 
-class ResidualBlock(nn.Module):
+class residual_block(nn.Module):
     def __init__(self, planes: int = 16):
-        super(ResidualBlock, self).__init__()
+        super(residual_block, self).__init__()
 
         self.expantion = 2
 
@@ -59,9 +59,9 @@ class ResidualBlock(nn.Module):
         return out
 
 
-class ResNet(nn.Module):
+class ratio_net(nn.Module):
     def __init__(self, input_featues: int=1, theta_features: int=3):
-        super(ResNet, self).__init__()
+        super(ratio_net, self).__init__()
 
         self.planes = 4
 
@@ -72,10 +72,10 @@ class ResNet(nn.Module):
                 nn.MaxPool2d(kernel_size=2, stride=2),
             )
         self.layer_1 = nn.Sequential(
-                ResidualBlock(self.planes),
-                ResidualBlock(2 * self.planes),
-                ResidualBlock(4 * self.planes),
-                ResidualBlock(8 * self.planes),
+                residual_block(self.planes),
+                residual_block(2 * self.planes),
+                residual_block(4 * self.planes),
+                residual_block(8 * self.planes),
                 nn.AvgPool2d(kernel_size=2, stride=2)
             )
         self.fc = nn.Sequential(
@@ -99,7 +99,7 @@ class ResNet(nn.Module):
 
 
 
-# m = ResNet()
+# m = ratio_net()
 # x = torch.randn(5, 1, 10, 10)
 # theta = torch.randn(5, 3)
 # print(m)

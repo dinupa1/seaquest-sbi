@@ -19,7 +19,7 @@ from sklearn.metrics import roc_auc_score, roc_curve, auc
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
-from sbi import ResNet
+from sbi import ratio_net
 from sbi import ratio_dataset
 from sbi import ratio_trainner
 from sbi import test_ratio_model
@@ -51,27 +51,27 @@ tree = {
 train_tree = uproot.open("./data/outputs.root:train_tree")
 X_train = train_tree["X"].array().to_numpy()
 theta_train = train_tree["theta"].array().to_numpy()
-theta0_train = train_tree["theta0"].array().to_numpy()
+theta_0_train = train_tree["theta_0"].array().to_numpy()
 
 val_tree = uproot.open("./data/outputs.root:val_tree")
 X_val = val_tree["X"].array().to_numpy()
 theta_val = val_tree["theta"].array().to_numpy()
-theta0_val = val_tree["theta0"].array().to_numpy()
+theta_0_val = val_tree["theta_0"].array().to_numpy()
 
 test_tree = uproot.open("./data/outputs.root:test_tree")
 X_test = test_tree["X"].array().to_numpy()
 theta_test = test_tree["theta"].array().to_numpy()
 
-theta_prior = uproot.open("./data/generator.root:theta_prior")
-theta0_test = theta_prior["theta0"].array().to_numpy()
+theta_prior = uproot.open("./data/outputs.root:prior_tree")
+theta_0_test = theta_prior["theta_0"].array().to_numpy()
 
-ds_train = ratio_dataset(X_train, theta_train, theta0_train)
-ds_val = ratio_dataset(X_val, theta_val, theta0_val)
+ds_train = ratio_dataset(X_train, theta_train, theta_0_train)
+ds_val = ratio_dataset(X_val, theta_val, theta_0_val)
 
 train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False)
 
-model = ResNet().double().to(dvc)
+model = ratio_net().double().to(dvc)
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
 criterion = nn.BCELoss()
 
@@ -83,14 +83,14 @@ tr.fit()
 #
 
 for i in range(100):
-    X_test_array = np.array([X_test[i] for j in range(len(theta0_test))])
+    X_test_array = np.array([X_test[i] for j in range(len(theta_0_test))])
     tree["theta"].append(theta_test[i])
-    tree["weights"].append(test_ratio_model(model, X_test_array, theta0_test, batch_size=32, device=dvc))
+    tree["weights"].append(test_ratio_model(model, X_test_array, theta_0_test, batch_size=32, device=dvc))
 
     if i%1000 == 0:
         print(f"[===> {i} tests are done ]")
 
 outfile = uproot.recreate("./data/eval.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
-outfile["prior"] = { "theta_test": theta0_test, }
+outfile["prior"] = { "theta_test": theta_0_test, }
 outfile.close()
