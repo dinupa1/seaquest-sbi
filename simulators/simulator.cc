@@ -17,315 +17,180 @@ double cross_section(double lambda, double mu, double nu, double phi, double cos
 }
 
 
-simulator2D::simulator2D(TString tname) {
-    tree = new TTree(tname.Data(), tname.Data());
-    
-    tree->Branch("X", X, "X[1][10][10]/D");
-    tree->Branch("theta", theta, "theta[3]/D");
-    tree->Branch("theta0", theta0, "theta0[3]/D");
-}
+reader::reader(TFile* infile, TString tname) {
+    tree = (TTree*)infile->Get(tname.Data());
 
-void simulator2D::train_samples(TTree* inputs, TTree* prior, TRandom3* generator) {
+    n_events = tree->GetEntries();
 
-    int n_data = 14999;
-    
-    double pT, phi, costh, true_phi, true_costh;
-
-    inputs->SetBranchAddress("phi", &phi);
-    inputs->SetBranchAddress("costh", &costh);
-    inputs->SetBranchAddress("true_phi", &true_phi);
-    inputs->SetBranchAddress("true_costh", &true_costh);
-
-    prior->SetBranchAddress("theta0", theta0);
-    prior->SetBranchAddress("theta", theta);
-    
-    // draw samples from histograms
-    for(int ii = 0; ii < prior->GetEntries(); ii++) {
-
-        prior->GetEntry(ii);
-
-        int fill = 0;
-        
-        TH2D* hist = new TH2D("hist", "", 10, -pi, pi, 10, -0.4, 0.4);
-        
-        for(int jj = 0; jj < inputs->GetEntries(); jj++) {
-            if(fill > n_data) break;
-            if(generator->Uniform(0., 1.) < generator->Uniform(0., 1.)) continue;
-            inputs->GetEntry(jj);
-            hist->Fill(phi, costh, cross_section(theta[0], theta[1], theta[2], true_phi, true_costh));
-            fill++;
-        }
-        /*
-        std::cout << "===> lambda0, mu0, nu0 " << theta0[0] << " , " << theta0[1] << " , " << theta0[2] << std::endl;
-        std::cout << "===> lambda1, mu1, nu1 " << theta[0] << " , " << theta[1] << " , " << theta[2] << std::endl;
-        std::cout << "===> events filled " << fill << std::endl;
-        std::cout << "===> final event " << jj_last << std::endl;
-        */
-        
-        hist->Scale(1./hist->Integral());
-        
-        for(int jj = 0; jj < 10; jj++) {
-            for(int kk = 0; kk < 10; kk++) {
-                X[0][jj][kk] = hist->GetBinContent(jj+1, kk+1);
-            }
-        }
-        
-        tree->Fill();
-        delete hist;
-        if(ii%10000==0){std::cout << "[ ===> " << ii << " events are done ]" << std::endl;}
-    }
+    tree->SetBranchAddress("pT", &pT);
+    tree->SetBranchAddress("phi", &phi);
+    tree->SetBranchAddress("costh", &costh);
+    tree->SetBranchAddress("true_pT", &true_pT);
+    tree->SetBranchAddress("true_phi", &true_phi);
+    tree->SetBranchAddress("true_costh", &true_costh);
 }
 
 
-void simulator2D::test_samples(TTree* inputs, TTree* prior, TRandom3* generator) {
+void reader::fill(double theta[12], TH2D* hist, double threshold, TRandom3* generator) {
 
-    int n_data = 14999;
+    int fill = 0;
 
-    double pT, phi, costh, true_phi, true_costh;
-
-    inputs->SetBranchAddress("phi", &phi);
-    inputs->SetBranchAddress("costh", &costh);
-    inputs->SetBranchAddress("true_phi", &true_phi);
-    inputs->SetBranchAddress("true_costh", &true_costh);
-
-    prior->SetBranchAddress("theta0", theta0);
-    prior->SetBranchAddress("theta", theta);
-
-    int events = 0;
-
-    // draw samples from histograms
-    for(int ii = 0; ii < prior->GetEntries(); ii++) {
-
-        if(events > n_data) break;
-
-        prior->GetEntry(ii);
-
-        if(std::abs(theta[0]) > 1.) continue;
-        if(std::abs(theta[1]) > 0.5) continue;
-        if(std::abs(theta[2]) > 0.5) continue;
-
-        int fill = 0;
-
-        TH2D* hist = new TH2D("hist", "", 10, -pi, pi, 10, -0.4, 0.4);
-
-        for(int jj = 0; jj < inputs->GetEntries(); jj++) {
-
-            if(fill > n_data) break;
-
-            if(generator->Uniform(0., 1.) < generator->Uniform(0., 1.)) continue;
-
-            inputs->GetEntry(jj);
-            hist->Fill(phi, costh, cross_section(theta[0], theta[1], theta[2], true_phi, true_costh));
-            fill++;
-        }
-        /*
-        std::cout << "===> lambda0, mu0, nu0 " << theta0[0] << " , " << theta0[1] << " , " << theta0[2] << std::endl;
-        std::cout << "===> lambda1, mu1, nu1 " << theta[0] << " , " << theta[1] << " , " << theta[2] << std::endl;
-        std::cout << "===> events filled " << fill << std::endl;
-        std::cout << "===> final event " << jj_last << std::endl;
-        */
-
-        hist->Scale(1./hist->Integral());
-
-        for(int jj = 0; jj < 10; jj++) {
-            for(int kk = 0; kk < 10; kk++) {
-                X[0][jj][kk] = hist->GetBinContent(jj+1, kk+1);
-            }
-        }
-
-        events++;
-
-        tree->Fill();
-        delete hist;
-        if(ii%10000==0){std::cout << "[ ===> " << ii << " events are done ]" << std::endl;}
-    }
-}
-
-
-simulator3D::simulator3D(TString tname) {
-
-    tree = new TTree(tname.Data(), tname.Data());
-
-    tree->Branch("X", X, "X[4][12][12]/D");
-    tree->Branch("theta", theta, "theta[12]/D");
-    tree->Branch("theta0", theta0, "theta0[12]/D");
-
-    for(int ii = 0; ii < 13; ii++) {
-        phi_edges[ii] = -pi + (2. * pi/12.) * ii ;
-        costh_edges[ii] = -0.4 + (0.8/12.) * ii;
-        // std::cout << "[ ===> " << phi_edges[ii] << " , " << costh_edges[ii] << " ]" << std::endl;
-    }
-}
-
-
-void simulator3D::train_samples(TTree* inputs, TTree* prior, TRandom3* generator) {
-
-    double pT, phi, costh, true_pT, true_phi, true_costh;
-
-    inputs->SetBranchAddress("pT", &pT);
-    inputs->SetBranchAddress("phi", &phi);
-    inputs->SetBranchAddress("costh", &costh);
-    inputs->SetBranchAddress("true_pT", &true_pT);
-    inputs->SetBranchAddress("true_phi", &true_phi);
-    inputs->SetBranchAddress("true_costh", &true_costh);
-
-    prior->SetBranchAddress("theta0", theta0);
-    prior->SetBranchAddress("theta", theta);
-
-    // draw samples from histograms
-    for(int ii = 0; ii < prior->GetEntries(); ii++) {
-
-        prior->GetEntry(ii);
-
-        int fill = 0;
-        int n_data = 14999;
-
-        TH3D* hist = new TH3D("hist", "", 4, pT_edges, 12, phi_edges, 12, costh_edges);
-
-        for(int jj = 0; jj < inputs->GetEntries(); jj++) {
-
-            if(fill > n_data) break;
-            if(generator->Uniform(-1., 1.) < generator->Uniform(-1., 1.)) continue;
-
-            inputs->GetEntry(jj);
-
-            for(int kk = 0; kk < 4; kk++) {
-                if(pT_edges[kk] < true_pT && true_pT <= pT_edges[kk+1]) {
-                    hist->Fill(pT, phi, costh, cross_section(theta[3 * kk + 0], theta[3 * kk + 1], theta[3 * kk + 2], true_phi, true_costh));
-                    // std::cout << "[ ===> " << kk << " , " << pT_edges[kk] << " < " << true_pT << " <= " << pT_edges[kk+1] << " , " << theta[kk + 0] << " , " << theta[kk + 1] << " , " << theta[kk + 2] << std::endl;
-                    fill++;
-                    break;
-                }
-            }
-        }
-
-        hist->Scale(1./hist->Integral());
-
+    for(int ii = 0; ii < n_events; ii++) {
+        if(fill > n_data) break;
+        if(generator->Uniform(0., 1.) < threshold) continue;
+        tree->GetEntry(ii);
         for(int jj = 0; jj < 4; jj++) {
-            for(int kk = 0; kk < 12; kk++) {
-                for(int mm = 0; mm < 12; mm++) {
-                     X[jj][kk][mm] = hist->GetBinContent(jj+1, kk+1, mm+1);
-                }
+            if(pT_edges[jj] < true_pT && true_pT <= pT_edges[jj + 1]) {
+                hist->Fill(phi, costh, cross_section(theta[3* jj + 0], theta[3* jj + 1], theta[3* jj + 2], true_phi, true_costh));
+                std::cout << "[ ===> jj " << 3 * jj << " lambda = " << theta[3* jj + 0] << " mu : " << theta[3* jj + 1] << " nu: " << theta[3* jj + 2] << " ]" << std::endl;
+                fill++;
             }
         }
+    }
+    // std::cout << "[ ===> filled with " << fill << " events ] " << std::endl;
+}
 
-        tree->Fill();
-        delete hist;
-        if(ii%10000==0){std::cout << "[ ===> " << ii << " events are done ]" << std::endl;}
+
+simulator::simulator() {
+
+    std::cout << "[ ===> e906 messy MC ]" << std::endl;
+
+    gSystem->Exec("python ./simulator/generator.py");
+
+    TFile* inputs = TFile::Open("./data/generator.root", "read");
+
+    train_reader = new reader(inputs, "X_train");
+    val_reader = new reader(inputs, "X_val");
+    test_reader = new reader(inputs, "X_test");
+
+    outputs = new TFile("./data/outputs.root", "recreate");
+
+    generator_0 = new TRandom3(42);
+    generator_1 = new TRandom3(52);
+
+    prior_tree = new TTree("prior_tree", "prior_tree");
+    prior_tree->Branch("theta_0", theta_0, "theta_0[12]/D");
+
+    train_tree = new TTree("train_tree", "train_tree");
+    train_tree->Branch("X", X, "X[1][10][10]/D");
+    train_tree->Branch("theta", theta, "theta[12]/D");
+    train_tree->Branch("theta_0", theta_0, "theta_0[12]/D");
+
+    val_tree = new TTree("val_tree", "val_tree");
+    val_tree->Branch("X", X, "X[1][10][10]/D");
+    val_tree->Branch("theta", theta, "theta[12]/D");
+    val_tree->Branch("theta_0", theta_0, "theta_0[12]/D");
+
+    test_tree = new TTree("test_tree", "test_tree");
+    test_tree->Branch("X", X, "X[1][10][10]/D");
+    test_tree->Branch("theta", theta, "theta[12]/D");
+}
+
+
+void simulator::prior(double theta[12], TRandom3* generator, double lambda_min, double lambda_max, double mu_min, double mu_max, double nu_min, double nu_max) {
+
+    for(int ii = 0; ii < 4; ii++) {
+        theta[3* ii + 0] = generator->Uniform(lambda_min, lambda_max);
+        theta[3* ii + 1] = generator->Uniform(mu_min, mu_max);
+        theta[3* ii + 2] = generator->Uniform(nu_min, nu_max);
+        // std::cout << "[ ===> ii "<< 3 * ii << " lambda = " << theta[3* ii + 0] << " mu : " << theta[3* ii + 1] << " nu: " << theta[3* ii + 2] << " ]" << std::endl;
     }
 }
 
 
-void simulator3D::test_samples(TTree* inputs, TTree* prior, TRandom3* generator) {
+void simulator::read(double X[1][10][10], TH2D* hist) {
 
-    double pT, phi, costh, true_pT, true_phi, true_costh;
+    hist->Scale(1./hist->GetMaximum());
 
-    inputs->SetBranchAddress("pT", &pT);
-    inputs->SetBranchAddress("phi", &phi);
-    inputs->SetBranchAddress("costh", &costh);
-    inputs->SetBranchAddress("true_pT", &true_pT);
-    inputs->SetBranchAddress("true_phi", &true_phi);
-    inputs->SetBranchAddress("true_costh", &true_costh);
-
-    // prior->SetBranchAddress("theta0", theta0);
-    prior->SetBranchAddress("theta", theta);
-
-    // draw samples from histograms
-    for(int ii = 0; ii < prior->GetEntries(); ii++) {
-
-        prior->GetEntry(ii);
-
-        if(std::abs(theta[0]) > 1.) continue;
-        if(std::abs(theta[1]) > 0.5) continue;
-        if(std::abs(theta[2]) > 0.5) continue;
-
-        if(std::abs(theta[3]) > 1.) continue;
-        if(std::abs(theta[4]) > 0.5) continue;
-        if(std::abs(theta[5]) > 0.5) continue;
-
-        if(std::abs(theta[6]) > 1.) continue;
-        if(std::abs(theta[7]) > 0.5) continue;
-        if(std::abs(theta[8]) > 0.5) continue;
-
-        if(std::abs(theta[9]) > 1.) continue;
-        if(std::abs(theta[10]) > 0.5) continue;
-        if(std::abs(theta[11]) > 0.5) continue;
-
-        int fill = 0;
-        int n_data = 14999;
-
-        TH3D* hist = new TH3D("hist", "", 4, pT_edges, 12, phi_edges, 12, costh_edges);
-
-        for(int jj = 0; jj < inputs->GetEntries(); jj++) {
-
-            if(fill > n_data) break;
-            if(generator->Uniform(-1., 1.) < generator->Uniform(-1., 1.)) continue;
-
-            inputs->GetEntry(jj);
-
-            for(int kk = 0; kk < 4; kk++) {
-                if(pT_edges[kk] < true_pT && true_pT <= pT_edges[kk+1]) {
-                    hist->Fill(pT, phi, costh, cross_section(theta[3 * kk + 0], theta[3 * kk + 1], theta[3 * kk + 2], true_phi, true_costh));
-                    // std::cout << "[ ===> " << kk << " , " << pT_edges[kk] << " < " << true_pT << " <= " << pT_edges[kk+1] << " , " << theta[kk + 0] << " , " << theta[kk + 1] << " , " << theta[kk + 2] << std::endl;
-                    fill++;
-                    break;
-                }
-            }
+    for(int ii = 0; ii < 10; ii++) {
+        for(int jj = 0; jj < 10; jj++) {
+            X[0][ii][jj] = hist->GetBinContent(ii+1, jj+1);
+            // std::cout << "[ ===> " << X[0][ii][jj] << " ]" << std::endl;
         }
-
-        hist->Scale(1./hist->Integral());
-
-        for(int jj = 0; jj < 4; jj++) {
-            for(int kk = 0; kk < 12; kk++) {
-                for(int mm = 0; mm < 12; mm++) {
-                     X[jj][kk][mm] = hist->GetBinContent(jj+1, kk+1, mm+1);
-                }
-            }
-        }
-
-        tree->Fill();
-        delete hist;
-        if(ii%10000==0){std::cout << "[ ===> " << ii << " events are done ]" << std::endl;}
     }
 }
 
 
-void forward_simulation(int seed) {
+void simulator::samples(int n_train, int n_val, int n_test) {
 
-    std::cout << "[ ===> forward simulation ]" << std::endl;
+    std::cout << "[ ===> prior distribution ]" << std::endl;
 
-    gSystem->Exec("python ./simulators/generator.py");
+    for(int ii = 0; ii < n_data; ii++) {
+        prior(theta, generator_0, -1.5, 1.5, -0.6, 0.6, -0.6, 0.6);
+        prior_tree->Fill();
+    }
 
-    // generator
-    TRandom3* generator = new TRandom3(seed);
+    std::cout << "[ ===> train events ]" << std::endl;
 
-    // inputs
-    TFile* infile = TFile::Open("./data/generator.root", "read");
+    TH2D* train_hist = new TH2D("train_hist", "", 10, -pi, pi, 10, -0.4, 0.4);
 
-    TTree* X_train = (TTree*)infile->Get("X_train");
-    TTree* X_val = (TTree*)infile->Get("X_val");
-    TTree* X_test = (TTree*)infile->Get("X_test");
+    for(int ii = 0; ii < n_train; ii++) {
 
-    TTree* theta_train = (TTree*)infile->Get("theta_train");
-    TTree* theta_val = (TTree*)infile->Get("theta_val");
-    TTree* theta_test = (TTree*)infile->Get("theta_test");
+        prior(theta_0, generator_0, -1.5, 1.5, -0.6, 0.6, -0.6, 0.6);
+        prior(theta, generator_1, -1.5, 1.5, -0.6, 0.6, -0.6, 0.6);
 
-    TFile* outfile = new TFile("./data/outputs.root", "recreate");
+        // std::cout << "*****************" << std::endl;
 
-    // train events
-    simulator3D* sim1 = new simulator3D("train_tree");
-    sim1->train_samples(X_train, theta_train, generator);
-    sim1->save();
+        train_hist->Reset();
+        double threshold = generator_0->Uniform(0., 1.);
+        train_reader->fill(theta, train_hist, threshold, generator_1);
+        read(X, train_hist);
+        train_tree->Fill();
 
-    simulator3D* sim2 = new simulator3D("val_tree");
-    sim2->train_samples(X_val, theta_val, generator);
-    sim2->save();
+        if(ii%10000==0){std::cout << "[ ===> " << ii << " events are done ]" << std::endl;}
+    }
 
-    // test events
-    simulator3D* sim3 = new simulator3D("test_tree");
-    sim3->test_samples(X_test, theta_test, generator);
-    sim3->save();
+    std::cout << "[ ===> val events ]" << std::endl;
 
-    outfile->Write();
-    outfile->Close();
+    TH2D* val_hist = new TH2D("val_hist", "", 10, -pi, pi, 10, -0.4, 0.4);
+
+    for(int ii = 0; ii < n_test; ii++) {
+
+        prior(theta_0, generator_0, -1.5, 1.5, -0.6, 0.6, -0.6, 0.6);
+        prior(theta, generator_1, -1.5, 1.5, -0.6, 0.6, -0.6, 0.6);
+
+        // std::cout << "*****************" << std::endl;
+
+        val_hist->Reset();
+        double threshold = generator_0->Uniform(0., 1.);
+        val_reader->fill(theta, val_hist, threshold, generator_1);
+        read(X, val_hist);
+        val_tree->Fill();
+
+        if(ii%10000==0){std::cout << "[ ===> " << ii << " events are done ]" << std::endl;}
+    }
+
+    std::cout << "[ ===> test events ]" << std::endl;
+
+    TH2D* test_hist = new TH2D("test_hist", "", 10, -pi, pi, 10, -0.4, 0.4);
+
+    for(int ii = 0; ii < n_train; ii++) {
+
+        prior(theta, generator_1, -1., 1., -0.5, 0.5, -0.5, 0.5);
+
+        // std::cout << "*****************" << std::endl;
+
+        test_hist->Reset();
+        double threshold = generator_0->Uniform(0., 1.);
+        test_reader->fill(theta, test_hist, threshold, generator_1);
+        read(X, test_hist);
+        test_tree->Fill();
+
+        if(ii%10000==0){std::cout << "[ ===> " << ii << " events are done ]" << std::endl;}
+    }
+
+    delete train_hist;
+    delete val_hist;
+    delete test_hist;
+}
+
+
+void simulator::save() {
+
+    train_tree->Write();
+    val_tree->Write();
+    test_tree->Write();
+    prior_tree->Write();
+
+    outputs->Close();
 }
