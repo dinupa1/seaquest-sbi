@@ -66,7 +66,7 @@ void plots_reader::plot_one(double theta, double meas, double error, TH1D* hist,
 
     hist->Scale(1./y_max);
 
-    graph->SetPoint(0, theta, 0.75);
+    graph->SetPoint(0, meas, 0.75);
     graph->SetPointError(0, error, 0.);
 
     graph->SetMarkerColor(4);
