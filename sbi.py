@@ -25,6 +25,9 @@ from sbi import ratio_trainner
 from sbi import test_ratio_model
 from sbi import mean_and_error
 
+from simulators import sim_reader
+from simulators import simulator
+
 from plots import plots_reader
 from plots import ratio_plots
 
@@ -38,7 +41,18 @@ torch.cuda.manual_seed(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-batch_size: int = 128
+batch_size: int = 50
+n_train: int = 500000
+n_val: int = 100000
+n_test: int = 20000
+
+#
+# forward simulation
+#
+
+# sim = simulator()
+# sim.samples(n_train, n_val, n_test)
+# sim.save()
 
 tree = {
         "theta":[],
@@ -88,7 +102,7 @@ tr.fit()
 for i in range(100):
     X_test_array = np.array([X_test[i] for j in range(len(theta_0_test))])
     tree["theta"].append(theta_test[i])
-    tree["weights"].append(test_ratio_model(model, X_test_array, theta_0_test, batch_size=64, device=dvc))
+    tree["weights"].append(test_ratio_model(model, X_test_array, theta_0_test, batch_size=50, device=dvc))
 
     if i%1000 == 0:
         print(f"[===> {i} tests are done ]")
@@ -98,6 +112,9 @@ outfile["tree"] = tree
 outfile["prior"] = {"theta_0": theta_0_test,}
 outfile.close()
 
+#
+# plots
+#
 
 rp = ratio_plots()
 rp.fill()

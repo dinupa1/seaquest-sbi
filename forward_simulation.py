@@ -1,6 +1,6 @@
 import numpy as np
 
-from simulators import reader
+from simulators import sim_reader
 from simulators import simulator
 
 n_train: int = 500000

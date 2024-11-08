@@ -63,7 +63,7 @@ class ratio_net(nn.Module):
     def __init__(self, input_dim:int = 1, theta_dim:int = 3):
         super(ratio_net, self).__init__()
 
-        self.planes:int = 5
+        self.planes:int = 10
         self.hidded_dim:int = 50
         self.output_dim:int = 1
 
