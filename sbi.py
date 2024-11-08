@@ -25,6 +25,9 @@ from sbi import ratio_trainner
 from sbi import test_ratio_model
 from sbi import mean_and_error
 
+from plots import plots_reader
+from plots import ratio_plots
+
 dvc = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {dvc} device")
 
@@ -35,7 +38,7 @@ torch.cuda.manual_seed(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-batch_size: int = 50000
+batch_size: int = 128
 
 tree = {
         "theta":[],
@@ -68,8 +71,8 @@ theta_0_test = theta_prior["theta_0"].array().to_numpy()
 ds_train = ratio_dataset(X_train, theta_train, theta_0_train)
 ds_val = ratio_dataset(X_val, theta_val, theta_0_val)
 
-train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True)
-val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False)
+train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True, num_workers=4)
+val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False, num_workers=4)
 
 model = ratio_net().double().to(dvc)
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
@@ -85,7 +88,7 @@ tr.fit()
 for i in range(100):
     X_test_array = np.array([X_test[i] for j in range(len(theta_0_test))])
     tree["theta"].append(theta_test[i])
-    tree["weights"].append(test_ratio_model(model, X_test_array, theta_0_test, batch_size=20000, device=dvc))
+    tree["weights"].append(test_ratio_model(model, X_test_array, theta_0_test, batch_size=64, device=dvc))
 
     if i%1000 == 0:
         print(f"[===> {i} tests are done ]")
@@ -94,3 +97,8 @@ outfile = uproot.recreate("./data/eval.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
 outfile["prior"] = {"theta_0": theta_0_test,}
 outfile.close()
+
+
+rp = ratio_plots()
+rp.fill()
+rp.plot()
