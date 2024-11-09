@@ -19,7 +19,7 @@ from sklearn.metrics import roc_auc_score, roc_curve, auc
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
-from sbi import ratio_net
+from sbi import resnet_10x10
 from sbi import ratio_dataset
 from sbi import ratio_trainner
 from sbi import test_ratio_model
@@ -43,15 +43,14 @@ torch.backends.cudnn.benchmark = False
 
 batch_size: int = 50
 n_train: int = 500000
-n_val: int = 100000
-n_test: int = 20000
+n_test: int = 5000
 
 #
 # forward simulation
 #
 
 # sim = simulator()
-# sim.samples(n_train, n_val, n_test)
+# sim.samples(n_train, n_test)
 # sim.save()
 
 tree = {
@@ -70,10 +69,6 @@ X_train = train_tree["X"].array().to_numpy()
 theta_train = train_tree["theta"].array().to_numpy()
 theta_0_train = train_tree["theta_0"].array().to_numpy()
 
-val_tree = uproot.open("./data/outputs.root:val_tree")
-X_val = val_tree["X"].array().to_numpy()
-theta_val = val_tree["theta"].array().to_numpy()
-theta_0_val = val_tree["theta_0"].array().to_numpy()
 
 test_tree = uproot.open("./data/outputs.root:test_tree")
 X_test = test_tree["X"].array().to_numpy()
@@ -82,8 +77,9 @@ theta_test = test_tree["theta"].array().to_numpy()
 theta_prior = uproot.open("./data/outputs.root:prior_tree")
 theta_0_test = theta_prior["theta_0"].array().to_numpy()
 
-ds_train = ratio_dataset(X_train, theta_train, theta_0_train)
-ds_val = ratio_dataset(X_val, theta_val, theta_0_val)
+ds_ratio = ratio_dataset(X_train, theta_train, theta_0_train)
+
+ds_train, ds_val = random_split(ds_ratio, [0.8, 0.2])
 
 train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True, num_workers=4)
 val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False, num_workers=4)

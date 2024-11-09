@@ -19,94 +19,105 @@ from sklearn.metrics import roc_auc_score, roc_curve, auc
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
+class basic_block(nn.Module):
+    expansion = 1
 
-class residual_block(nn.Module):
-    def __init__(self, planes: int = 16):
-        super(residual_block, self).__init__()
+    def __init__(self, in_channels, out_channels, stride=1, downsample=None):
+        super(basic_block, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU(inplace=True)
 
-        self.expantion = 2
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
 
-        self.conv_1 = nn.Sequential(
-                nn.Conv2d(planes, planes, kernel_size=1, padding=0, bias=False),
-                nn.BatchNorm2d(planes),
-            )
-        self.relu_1 = nn.ReLU()
-        self.conv_2 = nn.Sequential(
-                nn.Conv2d(planes, planes, kernel_size=3, padding=1, bias=False),
-                nn.BatchNorm2d(planes),
-            )
-        self.relu_2 = nn.ReLU()
-        self.conv_3 = nn.Sequential(
-                nn.Conv2d(planes, planes * self.expantion, kernel_size=1, padding=0, bias=False),
-                nn.BatchNorm2d(planes * self.expantion),
-
-            )
-        self.relu_3 = nn.ReLU()
-        self.downsample = nn.Sequential(
-                nn.Conv2d(planes, planes * self.expantion, kernel_size=1, bias=False),
-                nn.BatchNorm2d(planes * self.expantion),
-            )
+        self.downsample = downsample
+        self.stride = stride
 
     def forward(self, x):
-        out = self.conv_1(x)
-        out = self.relu_1(out)
-        out = self.conv_2(out)
-        out = self.relu_2(out)
-        out = self.conv_3(out)
-        identity = self.downsample(x)
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
         out += identity
-        out = self.relu_3(out)
+        out = self.relu(out)
+
         return out
 
 
-class ratio_net(nn.Module):
-    def __init__(self, input_dim:int = 1, theta_dim:int = 3):
-        super(ratio_net, self).__init__()
+class resnet(nn.Module):
+    def __init__(self, block, layers, num_classes=1, theta_dim=3):
+        super(resnet, self).__init__()
+        self.in_channels = 4
 
-        self.planes:int = 10
-        self.hidded_dim:int = 50
-        self.output_dim:int = 1
+        self.conv1 = nn.Conv2d(3, 4, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(4)
+        self.relu = nn.ReLU(inplace=True)
 
-        self.layer_0 = nn.Sequential(
-                nn.Conv2d(input_dim, self.planes, kernel_size=3, padding=1),
-                nn.BatchNorm2d(self.planes),
-                nn.ReLU(),
-                nn.MaxPool2d(kernel_size=2, stride=2),
+        self.layer1 = self._make_layer(block, 8, layers[0])
+        self.layer2 = self._make_layer(block, 16, layers[1], stride=2)
+        self.layer3 = self._make_layer(block, 32, layers[2], stride=2)
+
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc = nn.Sequential(
+                nn.Linear(32 * block.expansion + theta_dim, 32, bias=True),
+                nn.BatchNorm1d(32),
+                nn.ReLU(inplace=True),
+                nn.Linear(32, 16, bias=True),
+                nn.BatchNorm1d(16),
+                nn.ReLU(inplace=True),
+                nn.Linear(16, num_classes, bias=True)
             )
-        self.layer_1 = nn.Sequential(
-                residual_block(self.planes),
-                residual_block(2 * self.planes),
-                nn.MaxPool2d(kernel_size=2, stride=2),
-                residual_block(4 * self.planes),
-                residual_block(8 * self.planes),
-                nn.AvgPool2d(kernel_size=2, stride=2),
+        self.sigmoid = nn.Sigmoid()
+
+    def _make_layer(self, block, out_channels, blocks, stride=1):
+        downsample = None
+        if stride != 1 or self.in_channels != out_channels * block.expansion:
+            downsample = nn.Sequential(
+                nn.Conv2d(self.in_channels, out_channels * block.expansion, kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(out_channels * block.expansion),
             )
-        self.layer_2 = nn.Sequential(
-                nn.Linear(16 * self.planes * 1 * 1 + theta_dim, self.hidded_dim, bias=True),
-                nn.BatchNorm1d(self.hidded_dim),
-                nn.ReLU(),
-                nn.Linear(self.hidded_dim, self.hidded_dim, bias=True),
-                nn.BatchNorm1d(self.hidded_dim),
-                nn.ReLU(),
-                nn.Linear(self.hidded_dim, self.hidded_dim, bias=True),
-                nn.BatchNorm1d(self.hidded_dim),
-                nn.ReLU(),
-                nn.Linear(self.hidded_dim, 1, bias=True),
-                nn.Sigmoid(),
-            )
+
+        layers = []
+        layers.append(block(self.in_channels, out_channels, stride, downsample))
+        self.in_channels = out_channels * block.expansion
+        for _ in range(1, blocks):
+            layers.append(block(self.in_channels, out_channels))
+
+        return nn.Sequential(*layers)
 
     def forward(self, x, theta):
-        x = self.layer_0(x)
-        x = self.layer_1(x)
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+
+        x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = torch.cat([x, theta], dim=1)
-        logit = self.layer_2(x)
-        return logit
+        x = self.fc(x)
+        return self.sigmoid(x)
+
+
+def resnet_10x10():
+    layers = [2, 2, 2]
+    return resnet(basic_block, layers)
 
 
 
-# m = ratio_net()
-# x = torch.randn(5, 1, 10, 10)
+# m = resnet_10x10()
+# x = torch.randn(5, 3, 10, 10)
 # theta = torch.randn(5, 3)
 # print(m)
 # total_trainable_params = sum(p.numel() for p in m.parameters() if p.requires_grad)
