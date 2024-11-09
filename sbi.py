@@ -84,7 +84,7 @@ ds_train, ds_val = random_split(ds_ratio, [0.8, 0.2])
 train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True, num_workers=4)
 val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False, num_workers=4)
 
-model = ratio_net().double().to(dvc)
+model = resnet_10x10().double().to(dvc)
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
 criterion = nn.BCELoss()
 
