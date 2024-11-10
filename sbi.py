@@ -85,7 +85,7 @@ train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True, num_wor
 val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False, num_workers=4)
 
 model = resnet_10x10().double().to(dvc)
-optimizer = optim.Adam(model.parameters(), lr=0.0001)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 criterion = nn.BCELoss()
 
 tr = ratio_trainner(train_loader, val_loader, model, criterion, optimizer, device=dvc)
