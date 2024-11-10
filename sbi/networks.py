@@ -72,7 +72,7 @@ class resnet(nn.Module):
                 nn.BatchNorm1d(64),
                 nn.ReLU(inplace=True),
                 nn.Dropout(p=0.2),
-                nn.Linear(64 * block.expansion + theta_dim, num_classes, bias=True),
+                nn.Linear(64, num_classes, bias=True),
             )
         self.sigmoid = nn.Sigmoid()
 
