@@ -9,7 +9,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 from torch.utils.data import random_split
 from torch.utils.data import Dataset
-from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import CosineAnnealingLR
 
 import uproot
 import awkward as ak
@@ -27,11 +27,12 @@ class ratio_trainner:
         self.ratio_model = ratio_model
         self.criterion = criterion
         self.optimizer = optimizer
+        self.scheduler = CosineAnnealingLR(self.optimizer, T_max=max_epoch)
         self.max_epoch = max_epoch
         self.patience = patience
         self.device = device
         
-        print("===================== Ratio Model =====================")
+        print("===================== ResNet_18 =====================")
         print(self.ratio_model)
         total_trainable_params = sum(p.numel() for p in self.ratio_model.parameters() if p.requires_grad)
         print(f"total trainable params: {total_trainable_params}")
@@ -55,7 +56,7 @@ class ratio_trainner:
 
             X, theta, label = X.double().to(self.device), theta.double().to(self.device), label.double().to(self.device)
 
-            logit = self.ratio_model(X, theta)
+            ratio, logit = self.ratio_model(X, theta)
             
             loss = self.criterion(logit, label)
 
@@ -73,7 +74,7 @@ class ratio_trainner:
                 
                 X, theta, label = X.double().to(self.device), theta.double().to(self.device), label.double().to(self.device)
                 
-                logit = self.ratio_model(X, theta)
+                ratio, logit = self.ratio_model(X, theta)
 
                 logits = torch.cat([logits, logit]) if logits is not None else logit
                 labels = torch.cat([labels, label]) if labels is not None else label
@@ -96,6 +97,8 @@ class ratio_trainner:
             
             # evaluate loss for validation set
             val_loss, val_auc = self.eval_step(self.val_dataloader)
+
+            self.scheduler.step()
 
             print("\r" + " " * (50), end="")
             print("\r" + f"[Epoch {epoch:>3d}] [Train_loss: {train_loss:>5f} Train_auc: {train_auc:>5f}] [Val_loss: {val_loss:>5f} Val_auc: {val_auc:>5f}]")
@@ -120,16 +123,16 @@ def test_ratio_model(ratio_model, X_test, theta_test, batch_size=5000, device=No
     test_ds = TensorDataset(torch.from_numpy(X_test), torch.from_numpy(theta_test))
     dataloader = DataLoader(test_ds, batch_size=batch_size, shuffle=False)
 
-    logits = None
+    ratios = None
 
     ratio_model.eval()
     with torch.no_grad():
         for batch, (X, theta) in enumerate(dataloader):
             X, theta = X.double().to(device), theta.double().to(device)
 
-            logit = ratio_model(X, theta)
-            logits = torch.cat([logits, logit]) if logits is not None else logit
+            ratio, logit = ratio_model(X, theta)
+            ratios = torch.cat([ratios, ratio]) if logits is not None else logit
 
-    logits = logits.cpu().detach().numpy()
+    ratios = ratios.cpu().detach().numpy()
 
-    return logits[:, 0]/(1. - logits[:, 0] + 0.000000000000000001)
+    return ratios
