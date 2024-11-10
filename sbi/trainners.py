@@ -27,7 +27,7 @@ class ratio_trainner:
         self.ratio_model = ratio_model
         self.criterion = criterion
         self.optimizer = optimizer
-        self.scheduler = StepLR(self.optimizer, step_size=20, gamma=0.1)
+        self.scheduler = StepLR(self.optimizer, step_size=8, gamma=0.1)
         self.max_epoch = max_epoch
         self.patience = patience
         self.device = device
