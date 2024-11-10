@@ -67,7 +67,13 @@ class resnet(nn.Module):
         self.layer_3 = self._make_layer(block, 64, layers[2], stride=2)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(64 * block.expansion + theta_dim, num_classes, bias=True)
+        self.fc = nn.Sequential(
+                nn.Linear(64 * block.expansion + theta_dim, 64, bias=True),
+                nn.BatchNorm1d(64),
+                nn.ReLU(inplace=True),
+                nn.Dropouts(p=0.2),
+                nn.Linear(64 * block.expansion + theta_dim, num_classes, bias=True),
+            )
         self.sigmoid = nn.Sigmoid()
 
     def _make_layer(self, block, out_channels, blocks, stride=1):
