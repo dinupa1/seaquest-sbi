@@ -9,7 +9,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 from torch.utils.data import random_split
 from torch.utils.data import Dataset
-from torch.optim.lr_scheduler import CosineAnnealingLR
+from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
 
 import uproot
 import awkward as ak
@@ -27,7 +27,7 @@ class ratio_trainner:
         self.ratio_model = ratio_model
         self.criterion = criterion
         self.optimizer = optimizer
-        self.scheduler = CosineAnnealingLR(self.optimizer, T_max=max_epoch)
+        self.scheduler = StepLR(self.optimizer, step_size=10, gamma=0.1)
         self.max_epoch = max_epoch
         self.patience = patience
         self.device = device
