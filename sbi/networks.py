@@ -68,9 +68,9 @@ class resnet(nn.Module):
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Sequential(
-                nn.Linear(64 * block.expansion + theta_dim, 128, bias=True),
+                nn.Linear(64 * block.expansion + theta_dim, 32, bias=True),
                 nn.ReLU(inplace=True),
-                nn.Linear(128, num_classes, bias=True),
+                nn.Linear(32, num_classes, bias=True),
             )
         self.sigmoid = nn.Sigmoid()
 

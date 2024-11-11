@@ -34,3 +34,39 @@ def mean_and_error(prior, weights):
     sigma2 = np.sum(weights * (prior - xmean) * (prior - xmean))/((length - 1)/length * w_sum)
 
     return xmean, np.sqrt(sigma2)
+
+
+def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.1, device=None):
+
+    samples = []
+
+    theta_0_current = np.random.uniform(-1., 1.)
+    theta_1_current = np.random.uniform(-0.5, 0.5)
+    theta_2_current = np.random.uniform(-0.5, 0.5)
+
+    theta_current = torch.tensor([theta_0_current, theta_1_current, theta_2_current]).double().to(device)
+    X_tensor = torch.from_numpy(X).double().to(device)
+
+    ratio_model.eval()
+    with torch.no_grad():
+        for i in range(num_samples):
+
+            theta_0_proposal = np.random.normal(theta_0_current, proposal_std)
+            theta_1_proposal = np.random.normal(theta_1_current, proposal_std)
+            theta_2_proposal = np.random.normal(theta_2_current, proposal_std)
+
+            theta_proposal = torch.tensor([theta_0_proposal, theta_1_proposal, theta_2_proposal]).double().to(device)
+
+            ratio_current, logit = ratio_model(X_tensor, theta_current)
+            ratio_proposal, logit = ratio_model(X_tensor, theta_proposal)
+
+            acceptance_ratio = ratio_proposal/ratio_current
+
+            if np.random.rand() < acceptance_ratio:
+                theta_0_current = theta_0_proposal
+                theta_1_current = theta_1_proposal
+                theta_2_current = theta_2_proposal
+
+            samples.append([theta_0_current, theta_1_current, theta_2_current])
+
+    return np.array(samples)
