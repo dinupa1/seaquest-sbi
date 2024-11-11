@@ -4,20 +4,8 @@ import matplotlib.pyplot as plt
 import copy
 
 import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
-from torch.utils.data import random_split
-from torch.utils.data import Dataset
-from torch.optim.lr_scheduler import StepLR
-
-import uproot
-import awkward as ak
-
-from sklearn.covariance import log_likelihood
-from sklearn.metrics import roc_auc_score, roc_curve, auc
-from sklearn.model_selection import train_test_split
-from sklearn.utils import resample
+from torch.distributions.uniform import Uniform
+from torch.distributions.multivariate_normal import MultivariateNormal
 
 
 def cross_section_ratio(theta_0, theta_1, theta_2, phi, costh):
@@ -38,35 +26,36 @@ def mean_and_error(prior, weights):
 
 def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.1, device=None):
 
-    samples = []
+    chain = []
 
-    theta_0_current = np.random.uniform(-1., 1.)
-    theta_1_current = np.random.uniform(-0.5, 0.5)
-    theta_2_current = np.random.uniform(-0.5, 0.5)
+    prior = Uniform(torch.tensor([-1., -0.5, -0.5]), torch.tensor([1., 0.5, 0.5]))
 
-    theta_current = torch.tensor([theta_0_current, theta_1_current, theta_2_current]).unsqueeze(0).double().to(device)
-    X_tensor = torch.from_numpy(X).unsqueeze(0).double().to(device)
+    theta_current = prior.sample()
+    X_tensor = torch.from_numpy(X)
+
+    log_r_current, logit = ratio_model(X_tensor.unsqueeze(0).double().to(device), theta_current.unsqueeze(0).double().to(device))
+    log_prior_current = prior.log_prob(theta_current)
 
     ratio_model.eval()
     with torch.no_grad():
         for i in range(num_samples):
 
-            theta_0_proposal = np.random.normal(theta_0_current, proposal_std)
-            theta_1_proposal = np.random.normal(theta_1_current, proposal_std)
-            theta_2_proposal = np.random.normal(theta_2_current, proposal_std)
+            proposal = MultivariateNormal(theta_current, proposal_std * torch.eye(3))
 
-            theta_proposal = torch.tensor([theta_0_proposal, theta_1_proposal, theta_2_proposal]).unsqueeze(0).double().to(device)
+            theta_proposal = proposal.sample()
 
-            ratio_current, logit = ratio_model(X_tensor, theta_current)
-            ratio_proposal, logit = ratio_model(X_tensor, theta_proposal)
+            log_r_proposal, logit = ratio_model(X_tensor.unsqueeze(0).double().to(device), theta_proposal.unsqueeze(0).double().to(device))
+            log_prior_proposal = prior.log_prob(theta_proposal)
 
-            acceptance_ratio = ratio_proposal/ratio_current
+            acceptance_ratio = (log_prior_proposal + log_r_proposal) - (log_prior_current + log_r_current)
+            acceptance_probability = min([1, torch.exp(acceptance_ratio).item()])
 
-            if np.random.rand() < acceptance_ratio:
-                theta_0_current = theta_0_proposal
-                theta_1_current = theta_1_proposal
-                theta_2_current = theta_2_proposal
+            if np.random.uniform() <= acceptance_probability:
+                theta_current = theta_proposal
+                log_r_current = log_r_proposal
+                log_prior_current = log_prior_proposal
 
-            samples.append([theta_0_current, theta_1_current, theta_2_current])
 
-    return np.array(samples)
+            chain.append([theta_current[0].item(), theta_current[1].item(), theta_current[2].item()])
+
+    return np.array(chain)

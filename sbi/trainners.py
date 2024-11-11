@@ -56,7 +56,7 @@ class ratio_trainner:
 
             X, theta, label = X.double().to(self.device), theta.double().to(self.device), label.double().to(self.device)
 
-            ratio, logit = self.ratio_model(X, theta)
+            log_r, logit = self.ratio_model(X, theta)
             
             loss = self.criterion(logit, label)
 
@@ -74,7 +74,7 @@ class ratio_trainner:
                 
                 X, theta, label = X.double().to(self.device), theta.double().to(self.device), label.double().to(self.device)
                 
-                ratio, logit = self.ratio_model(X, theta)
+                log_r, logit = self.ratio_model(X, theta)
 
                 logits = torch.cat([logits, logit]) if logits is not None else logit
                 labels = torch.cat([labels, label]) if labels is not None else label
@@ -123,16 +123,16 @@ def test_ratio_model(ratio_model, X_test, theta_test, batch_size=5000, device=No
     test_ds = TensorDataset(torch.from_numpy(X_test), torch.from_numpy(theta_test))
     dataloader = DataLoader(test_ds, batch_size=batch_size, shuffle=False)
 
-    ratios = None
+    log_rs = None
 
     ratio_model.eval()
     with torch.no_grad():
         for batch, (X, theta) in enumerate(dataloader):
             X, theta = X.double().to(device), theta.double().to(device)
 
-            ratio, logit = ratio_model(X, theta)
-            ratios = torch.cat([ratios, ratio]) if ratios is not None else ratio
+            log_r, logit = ratio_model(X, theta)
+            log_rs = torch.cat([ratios, ratio]) if log_rs is not None else log_r
 
-    ratios = ratios.cpu().detach().numpy()
+    log_rs = log_rs.cpu().detach().numpy()
 
-    return ratios
+    return np.exp(log_rs)
