@@ -44,8 +44,8 @@ def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.1, dev
     theta_1_current = np.random.uniform(-0.5, 0.5)
     theta_2_current = np.random.uniform(-0.5, 0.5)
 
-    theta_current = torch.tensor([theta_0_current, theta_1_current, theta_2_current]).double().to(device)
-    X_tensor = torch.from_numpy(X).double().to(device)
+    theta_current = torch.tensor([theta_0_current, theta_1_current, theta_2_current]).unsqueeze(0).double().to(device)
+    X_tensor = torch.from_numpy(X).unsqueeze(0).double().to(device)
 
     ratio_model.eval()
     with torch.no_grad():
@@ -55,7 +55,7 @@ def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.1, dev
             theta_1_proposal = np.random.normal(theta_1_current, proposal_std)
             theta_2_proposal = np.random.normal(theta_2_current, proposal_std)
 
-            theta_proposal = torch.tensor([theta_0_proposal, theta_1_proposal, theta_2_proposal]).double().to(device)
+            theta_proposal = torch.tensor([theta_0_proposal, theta_1_proposal, theta_2_proposal]).unsqueeze(0).double().to(device)
 
             ratio_current, logit = ratio_model(X_tensor, theta_current)
             ratio_proposal, logit = ratio_model(X_tensor, theta_proposal)
