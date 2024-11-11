@@ -131,7 +131,7 @@ def test_ratio_model(ratio_model, X_test, theta_test, batch_size=5000, device=No
             X, theta = X.double().to(device), theta.double().to(device)
 
             log_r, logit = ratio_model(X, theta)
-            log_rs = torch.cat([ratios, ratio]) if log_rs is not None else log_r
+            log_rs = torch.cat([log_rs, log_r]) if log_rs is not None else log_r
 
     log_rs = log_rs.cpu().detach().numpy()
 
