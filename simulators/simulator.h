@@ -42,7 +42,6 @@ class simulator {
 public:
     double X[3][10][10];
     double theta[3];
-    double theta_0[3];
     TFile* outputs;
     TTree* train_tree;
     TTree* test_tree;

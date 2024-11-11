@@ -25,37 +25,40 @@ def mean_and_error(prior, weights):
 
 
 def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.1, device=None):
-
     chain = []
 
-    prior = Uniform(torch.tensor([-1., -0.5, -0.5]), torch.tensor([1., 0.5, 0.5]))
+    # Set prior bounds
+    prior = Uniform(torch.tensor([-1., -0.5, -0.5], device=device), torch.tensor([1., 0.5, 0.5], device=device))
 
-    theta_current = prior.sample()
-    X_tensor = torch.from_numpy(X)
-
-    log_r_current, logit = ratio_model(X_tensor.unsqueeze(0).double().to(device), theta_current.unsqueeze(0).double().to(device))
-    log_prior_current = prior.log_prob(theta_current)
+    # Initialize the parameter vector
+    theta_current = torch.tensor([0., 0., 0.], device=device)
+    X_tensor = torch.from_numpy(X).to(device).double()
 
     ratio_model.eval()
     with torch.no_grad():
-        for i in range(num_samples):
-
-            proposal = MultivariateNormal(theta_current, proposal_std * torch.eye(3))
-
+        for _ in range(num_samples):
+            # Proposal distribution centered around current theta
+            proposal = MultivariateNormal(theta_current, proposal_std * torch.eye(3, device=device))
             theta_proposal = proposal.sample()
 
-            log_r_proposal, logit = ratio_model(X_tensor.unsqueeze(0).double().to(device), theta_proposal.unsqueeze(0).double().to(device))
-            log_prior_proposal = prior.log_prob(theta_proposal)
+            # Check if proposal falls within the prior bounds
+            if torch.all(torch.abs(theta_proposal) <= torch.tensor([1.0, 0.5, 0.5], device=device)):
+                # Calculate log ratio estimations for current and proposal
+                log_r_current, _ = ratio_model(X_tensor.unsqueeze(0), theta_current.unsqueeze(0))
+                log_prior_current = prior.log_prob(theta_current).sum()
 
-            acceptance_ratio = (log_prior_proposal + log_r_proposal) - (log_prior_current + log_r_current)
-            acceptance_probability = min([1, torch.exp(acceptance_ratio).item()])
+                log_r_proposal, _ = ratio_model(X_tensor.unsqueeze(0), theta_proposal.unsqueeze(0))
+                log_prior_proposal = prior.log_prob(theta_proposal).sum()
 
-            if np.random.uniform() <= acceptance_probability:
-                theta_current = theta_proposal
-                log_r_current = log_r_proposal
-                log_prior_current = log_prior_proposal
+                # Calculate acceptance probability
+                acceptance_ratio = (log_prior_proposal + log_r_proposal) - (log_prior_current + log_r_current)
+                acceptance_probability = min(1, torch.exp(acceptance_ratio).item())
 
+                # Accept or reject the proposal
+                if torch.rand(1).item() <= acceptance_probability:
+                    theta_current = theta_proposal
 
-            chain.append([theta_current[0].item(), theta_current[1].item(), theta_current[2].item()])
+            # Append current theta to the chain
+            chain.append(theta_current.cpu().numpy())
 
     return np.array(chain)

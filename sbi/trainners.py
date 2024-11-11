@@ -51,33 +51,70 @@ class ratio_trainner:
         self.optimizer.step()
         
     def train_step(self):
+        num_iterations = len(self.train_dataloader)//2
+        loader = iter(self.train_dataloader)
         self.ratio_model.train()
-        for batch, (X, theta, label) in enumerate(self.train_dataloader):
+        for batch in range(num_iterations):
 
-            X, theta, label = X.double().to(self.device), theta.double().to(self.device), label.double().to(self.device)
+            x_a, theta_a = next(loader)
+            x_a, theta_a = x_a.double().to(self.device), theta_a.double().to(self.device)
 
-            log_r, logit = self.ratio_model(X, theta)
+            x_b, theta_b = next(loader)
+            x_b, theta_b = x_b.double().to(self.device), theta_b.double().to(self.device)
+
+            _, logit_dep_a = self.ratio_model(x_a, theta_a)
+            _, logit_ind_a = self.ratio_model(x_a, theta_b)
+
+            _, logit_dep_b = self.ratio_model(x_b, theta_b)
+            _, logit_ind_b = self.ratio_model(x_b, theta_a)
+
+            ones = torch.ones([len(theta_a), 1]).double().to(self.device)
+            zeros = torch.zeros([len(theta_a), 1]).double().to(self.device)
+
+
+            loss_a = self.criterion(logit_dep_a, ones) + self.criterion(logit_ind_a, zeros)
+            loss_b = self.criterion(logit_dep_b, ones) + self.criterion(logit_ind_b, zeros)
             
-            loss = self.criterion(logit, label)
+            loss = loss_a + loss_b
 
             # Backpropagation
             self.backpropagation(loss)
 
-            loss, current = loss.item(), (batch + 1) * len(X)
+            loss, current = loss.item(), (batch + 1) * len(X_a)
             print("\r" + f"[Epoch {self.epoch:>3d}] [{current:>5d}/{self.size:>5d}] [Train_loss: {loss:>5f}]", end="")
             
     def eval_step(self, data_loader):
+        num_iterations = len(data_loader)//2
+        loader = iter(data_loader)
         self.ratio_model.eval()
         logits, labels = None, None
         with torch.no_grad():
-            for batch, (X, theta, label) in enumerate(data_loader):
-                
-                X, theta, label = X.double().to(self.device), theta.double().to(self.device), label.double().to(self.device)
-                
-                log_r, logit = self.ratio_model(X, theta)
+            for batch in range(num_iterations):
 
-                logits = torch.cat([logits, logit]) if logits is not None else logit
-                labels = torch.cat([labels, label]) if labels is not None else label
+                x_a, theta_a = next(loader)
+                x_a, theta_a = x_a.double().to(self.device), theta_a.double().to(self.device)
+
+                x_b, theta_b = next(loader)
+                x_b, theta_b = x_b.double().to(self.device), theta_b.double().to(self.device)
+
+                ones = torch.ones([len(theta_a), 1]).double().to(self.device)
+                zeros = torch.zeros([len(theta_a), 1]).double().to(self.device)
+
+                _, logit_dep_a = self.ratio_model(x_a, theta_a)
+                logits = torch.cat([logits, logit_dep_a]) if logits is not None else logit_dep_a
+                labels = torch.cat([labels, ones]) if labels is not None else ones
+
+                _, logit_ind_a = self.ratio_model(x_a, theta_b)
+                logits = torch.cat([logits, logit_ind_a]) if logits is not None else logit_ind_a
+                labels = torch.cat([labels, zeros]) if labels is not None else zeros
+
+                _, logit_dep_b = self.ratio_model(x_b, theta_b)
+                logits = torch.cat([logits, logit_dep_b]) if logits is not None else logit_dep_b
+                labels = torch.cat([labels, ones]) if labels is not None else ones
+
+                _, logit_ind_b = self.ratio_model(x_b, theta_a)
+                logits = torch.cat([logits, logit_ind_b]) if logits is not None else logit_ind_b
+                labels = torch.cat([labels, zeros]) if labels is not None else zeros
                 
             loss = self.criterion(logits, labels)
             auc = roc_auc_score(labels.cpu().numpy().reshape(-1), logits.cpu().numpy().reshape(-1))

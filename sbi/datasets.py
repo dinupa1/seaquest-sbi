@@ -21,15 +21,14 @@ from sklearn.utils import resample
 
 
 class ratio_dataset(Dataset):
-    def __init__(self, X, theta1, theta0):
+    def __init__(self, X, theta):
         super(ratio_dataset, self).__init__()
 
-        self.X = np.concatenate([X, X])
-        self.theta = np.concatenate([theta1, theta0])
-        self.label = np.concatenate([np.ones((len(X), 1)), np.zeros((len(X), 1))])
+        self.X = X
+        self.theta = theta
         
     def __len__(self):
         return len(self.X)
         
     def __getitem__(self, idx):
-        return self.X[idx], self.theta[idx], self.label[idx]
+        return self.X[idx], self.theta[idx]

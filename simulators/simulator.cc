@@ -63,12 +63,11 @@ simulator::simulator():generator(std::make_unique<TRandom3>(42)) {
     outputs = new TFile("./data/outputs.root", "recreate");
 
     prior_tree = new TTree("prior_tree", "prior_tree");
-    prior_tree->Branch("theta_0", theta_0, "theta_0[3]/D");
+    prior_tree->Branch("theta", theta, "theta[3]/D");
 
     train_tree = new TTree("train_tree", "train_tree");
     train_tree->Branch("X", X, "X[3][10][10]/D");
     train_tree->Branch("theta", theta, "theta[3]/D");
-    train_tree->Branch("theta_0", theta_0, "theta_0[3]/D");
 
     test_tree = new TTree("test_tree", "test_tree");
     test_tree->Branch("X", X, "X[3][10][10]/D");
@@ -107,7 +106,7 @@ void simulator::samples(int n_train, int n_test) {
     std::cout << "[ ===> prior distribution ]" << std::endl;
 
     for(int ii = 0; ii < n_data; ii++) {
-        prior(theta_0, -1., 1., -0.5, 0.5, -0.5, 0.5);
+        prior(theta, -1., 1., -0.5, 0.5, -0.5, 0.5);
         prior_tree->Fill();
     }
 
@@ -115,7 +114,6 @@ void simulator::samples(int n_train, int n_test) {
 
     for(int ii = 0; ii < n_train; ii++) {
 
-        prior(theta_0, -1., 1., -0.5, 0.5, -0.5, 0.5);
         prior(theta, -1., 1., -0.5, 0.5, -0.5, 0.5);
 
         std::unique_ptr<TH2D> hist_0(new TH2D("hist_0", "", 10, -pi, pi, 10, -0.4, 0.4));

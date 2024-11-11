@@ -42,7 +42,7 @@ torch.cuda.manual_seed(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-batch_size: int = 256
+batch_size: int = 64
 n_train: int = 500000
 n_test: int = 5000
 
@@ -68,17 +68,16 @@ tree = {
 train_tree = uproot.open("./data/outputs.root:train_tree")
 X_train = train_tree["X"].array().to_numpy()
 theta_train = train_tree["theta"].array().to_numpy()
-theta_0_train = train_tree["theta_0"].array().to_numpy()
 
 
 test_tree = uproot.open("./data/outputs.root:test_tree")
 X_test = test_tree["X"].array().to_numpy()
 theta_test = test_tree["theta"].array().to_numpy()
 
-theta_prior = uproot.open("./data/outputs.root:prior_tree")
-theta_0_test = theta_prior["theta_0"].array().to_numpy()
+# theta_prior = uproot.open("./data/outputs.root:prior_tree")
+# theta_0_test = theta_prior["theta_0"].array().to_numpy()
 
-ds_ratio = ratio_dataset(X_train, theta_train, theta_0_train)
+ds_ratio = ratio_dataset(X_train, theta_train)
 
 ds_train, ds_val = random_split(ds_ratio, [0.8, 0.2])
 
