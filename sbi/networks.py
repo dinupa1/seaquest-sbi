@@ -56,18 +56,22 @@ class basic_block(nn.Module):
 class resnet(nn.Module):
     def __init__(self, block, layers, num_classes=1, theta_dim=3):
         super(resnet, self).__init__()
-        self.in_channels = 16
+        self.in_channels = 8
 
-        self.conv_1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn_1 = nn.BatchNorm2d(16)
+        self.conv_1 = nn.Conv2d(3, 8, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn_1 = nn.BatchNorm2d(8)
         self.relu = nn.ReLU(inplace=True)
 
-        self.layer_1 = self._make_layer(block, 32, layers[0])
-        self.layer_2 = self._make_layer(block, 64, layers[1], stride=2)
-        self.layer_3 = self._make_layer(block, 32, layers[2], stride=2)
+        self.layer_1 = self._make_layer(block, 16, layers[0])
+        self.layer_2 = self._make_layer(block, 32, layers[1], stride=2)
+        self.layer_3 = self._make_layer(block, 64, layers[2], stride=2)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(32 * block.expansion + theta_dim, num_classes, bias=True)
+        self.fc = nn.Sequential(
+                nn.Linear(64 * block.expansion + theta_dim, 128, bias=True),
+                nn.ReLU(inplace=True),
+                nn.Linear(128, num_classes, bias=True),
+            )
         self.sigmoid = nn.Sigmoid()
 
     def _make_layer(self, block, out_channels, blocks, stride=1):
