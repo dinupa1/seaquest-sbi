@@ -80,7 +80,7 @@ class ratio_trainner:
             # Backpropagation
             self.backpropagation(loss)
 
-            loss, current = loss.item(), (batch + 1) * len(X_a)
+            loss, current = loss.item(), (batch + 1) * len(x_a)
             print("\r" + f"[Epoch {self.epoch:>3d}] [{current:>5d}/{self.size:>5d}] [Train_loss: {loss:>5f}]", end="")
             
     def eval_step(self, data_loader):
