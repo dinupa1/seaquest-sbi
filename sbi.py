@@ -20,6 +20,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
 from sbi import resnet_10x10
+from sbi import ratio_net
 from sbi import ratio_dataset
 from sbi import ratio_trainner
 from sbi import test_ratio_model
@@ -84,7 +85,7 @@ ds_train, ds_val = random_split(ds_ratio, [0.8, 0.2])
 train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False)
 
-model = resnet_10x10().double().to(dvc)
+model = ratio_net().double().to(dvc)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 criterion = nn.BCELoss()
 
@@ -118,47 +119,49 @@ outfile.close()
 # rp.plot()
 
 
-# metropolis_hastings
-# posterior = metropolis_hastings(model, X_test[0], num_samples=10000, proposal_std=0.1, device=dvc)
-#
-# theta_mean = np.mean(posterior, axis=0)
-# theta_std = np.std(posterior, axis=0)
-#
-#
-# bins = np.linspace(-1., 1., 31)
-# plt.figure(figsize=(8., 8.))
-# plt.hist(posterior[:, 0], bins=bins, histtype="step", density=True)
-# plt.axvline(x=theta_test[0, 0], linestyle="--", color="r", label=r"$\lambda_{true}$")
-# plt.xlabel(r"$\lambda$")
-# plt.ylabel(r"$p(\lambda|x)$")
-# plt.text(0., 0.1, f"$\lambda_{{fit}}$ = {theta_mean[0]:.3f} +/- {theta_std[0]:.3f}")
-# plt.legend(frameon=False)
-# plt.tight_layout()
-# plt.savefig("plots/p_lambda_x.png")
-# plt.close("all")
-#
-#
-#
-# bins = np.linspace(-0.5, 0.5, 31)
-# plt.figure(figsize=(8., 8.))
-# plt.hist(posterior[:, 1], bins=bins, histtype="step", density=True)
-# plt.axvline(x=theta_test[0, 1], linestyle="--", color="r", label=r"$\mu_{true}$")
-# plt.xlabel(r"$\mu$")
-# plt.ylabel(r"$p(\mu|x)$")
-# plt.text(0., 0.1, f"$\mu_{{fit}}$ = {theta_mean[1]:.3f} +/- {theta_std[1]:.3f}")
-# plt.legend(frameon=False)
-# plt.tight_layout()
-# plt.savefig("plots/p_mu_x.png")
-# plt.close("all")
-#
-#
-# plt.figure(figsize=(8., 8.))
-# plt.hist(posterior[:, 2], bins=bins, histtype="step", density=True)
-# plt.axvline(x=theta_test[0, 2], linestyle="--", color="r", label=r"$\nu_{true}$")
-# plt.xlabel(r"$\nu$")
-# plt.ylabel(r"$p(\nu|x)$")
-# plt.text(0., 0.1, f"$\nu_{{fit}}$ = {theta_mean[2]:.3f} +/- {theta_std[2]:.3f}")
-# plt.legend(frameon=False)
-# plt.tight_layout()
-# plt.savefig("plots/p_nu_x.png")
-# plt.close("all")
+metropolis_hastings
+posterior = metropolis_hastings(model, X_test[0], num_samples=10000, device=dvc)
+
+theta_mean = np.mean(posterior, axis=0)
+theta_std = np.std(posterior, axis=0)
+
+
+bins = np.linspace(-1., 1., 31)
+
+plt.figure(figsize=(8., 8.))
+plt.hist(posterior[:, 0], bins=bins, histtype="step", density=True)
+plt.axvline(x=theta_test[0, 0], linestyle="--", color="r", label=r"$\lambda_{true}$")
+plt.xlabel(r"$\lambda$")
+plt.ylabel(r"$p(\lambda|x)$")
+plt.text(0., 0.1, f"$\lambda_{{fit}}$ = {theta_mean[0]:.3f} +/- {theta_std[0]:.3f}")
+plt.legend(frameon=False)
+plt.tight_layout()
+plt.savefig("plots/p_lambda_x.png")
+plt.close("all")
+
+
+
+bins = np.linspace(-0.5, 0.5, 31)
+
+plt.figure(figsize=(8., 8.))
+plt.hist(posterior[:, 1], bins=bins, histtype="step", density=True)
+plt.axvline(x=theta_test[0, 1], linestyle="--", color="r", label=r"$\mu_{true}$")
+plt.xlabel(r"$\mu$")
+plt.ylabel(r"$p(\mu|x)$")
+plt.text(0., 0.1, f"$\mu_{{fit}}$ = {theta_mean[1]:.3f} +/- {theta_std[1]:.3f}")
+plt.legend(frameon=False)
+plt.tight_layout()
+plt.savefig("plots/p_mu_x.png")
+plt.close("all")
+
+
+plt.figure(figsize=(8., 8.))
+plt.hist(posterior[:, 2], bins=bins, histtype="step", density=True)
+plt.axvline(x=theta_test[0, 2], linestyle="--", color="r", label=r"$\nu_{true}$")
+plt.xlabel(r"$\nu$")
+plt.ylabel(r"$p(\nu|x)$")
+plt.text(0., 0.1, f"$\nu_{{fit}}$ = {theta_mean[2]:.3f} +/- {theta_std[2]:.3f}")
+plt.legend(frameon=False)
+plt.tight_layout()
+plt.savefig("plots/p_nu_x.png")
+plt.close("all")

@@ -111,7 +111,42 @@ def resnet_10x10():
 
 
 
-# m = resnet_10x10()
+class ratio_net(nn.Module):
+    def __init__(self, input_dim: int=100, theta_dim: int=3, num_classes: int=1):
+        super(ratio_net, self).__init__()
+
+        self.fc_1 = nn.Linear(input_dim + theta_dim, 256, bias=True)
+        self.bn_1 = nn.BatchNorm1d(256)
+
+        self.fc_2 = nn.Linear(256, 128, bias=True)
+        self.bn_2 = nn.BatchNorm1d(128)
+
+        self.fc_3 = nn.Linear(128, 64, bias=True)
+        self.bn_3 = nn.BatchNorm1d(64)
+
+        self.fc_4 = nn.Linear(64, num_classes, bias=True)
+
+        self.relu = nn.ReLU(inplace=True)
+        self.dropout = nn.Dropout(p=0.2)
+        self.sigmoid = nn.Sigmoid()
+
+
+    def forward(self, x, theta):
+        x = torch.flatten(x[:, 0, :, :], 1)
+        x = torch.cat([x, theta], dim=1)
+        x = self.bn_1(self.fc_1(x))
+        x = self.relu(x)
+        x = self.bn_2(self.fc_2(x))
+        x = self.relu(x)
+        x = self.dropout(x)
+        x = self.bn_3(self.fc_3(x))
+        x = self.relu(x)
+        log_r = self.fc_4(x)
+        logit = self.sigmoid(log_r)
+        return log_r, logit
+
+
+# m = ratio_net()
 # x = torch.randn(5, 3, 10, 10)
 # theta = torch.randn(5, 3)
 # print(m)
