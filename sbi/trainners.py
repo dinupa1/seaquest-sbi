@@ -87,7 +87,6 @@ class ratio_trainner:
         num_iterations = len(data_loader)//2
         loader = iter(data_loader)
         self.ratio_model.eval()
-        logits, labels = None, None
         with torch.no_grad():
             for batch in range(num_iterations):
 
@@ -97,28 +96,25 @@ class ratio_trainner:
                 x_b, theta_b = next(loader)
                 x_b, theta_b = x_b.double().to(self.device), theta_b.double().to(self.device)
 
+                _, logit_dep_a = self.ratio_model(x_a, theta_a)
+                _, logit_ind_a = self.ratio_model(x_a, theta_b)
+
+                _, logit_dep_b = self.ratio_model(x_b, theta_b)
+                _, logit_ind_b = self.ratio_model(x_b, theta_a)
+
                 ones = torch.ones([len(theta_a), 1]).double().to(self.device)
                 zeros = torch.zeros([len(theta_a), 1]).double().to(self.device)
 
-                _, logit_dep_a = self.ratio_model(x_a, theta_a)
-                logits = torch.cat([logits, logit_dep_a]) if logits is not None else logit_dep_a
-                labels = torch.cat([labels, ones]) if labels is not None else ones
+                loss_a = self.criterion(logit_dep_a, ones) + self.criterion(logit_ind_a, zeros)
+                loss_b = self.criterion(logit_dep_b, ones) + self.criterion(logit_ind_b, zeros)
 
-                _, logit_ind_a = self.ratio_model(x_a, theta_b)
-                logits = torch.cat([logits, logit_ind_a]) if logits is not None else logit_ind_a
-                labels = torch.cat([labels, zeros]) if labels is not None else zeros
+                auc_a = roc_auc_score(torch.cat([ones, zeros], dim=1).cpu().numpy().reshape(-1), torch.cat([logit_dep_a, logit_ind_a]).cpu().numpy().reshape(-1))
+                auc_b = roc_auc_score(torch.cat([ones, zeros], dim=1).cpu().numpy().reshape(-1), torch.cat([logit_dep_b, logit_ind_b]).cpu().numpy().reshape(-1))
 
-                _, logit_dep_b = self.ratio_model(x_b, theta_b)
-                logits = torch.cat([logits, logit_dep_b]) if logits is not None else logit_dep_b
-                labels = torch.cat([labels, ones]) if labels is not None else ones
+                loss += loss_a + loss_b
+                auc += auc_a + auc_b
 
-                _, logit_ind_b = self.ratio_model(x_b, theta_a)
-                logits = torch.cat([logits, logit_ind_b]) if logits is not None else logit_ind_b
-                labels = torch.cat([labels, zeros]) if labels is not None else zeros
-                
-            loss = self.criterion(logits, labels)
-            auc = roc_auc_score(labels.cpu().numpy().reshape(-1), logits.cpu().numpy().reshape(-1))
-            return loss, auc
+            return loss/num_iterations, auc/num_iterations
             
     def fit(self, n_epoch=None):
         max_epoch = (self.epoch + n_epoch + 1) if n_epoch else self.max_epoch
