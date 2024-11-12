@@ -33,7 +33,7 @@ plots_reader::plots_reader(TFile* inputs) {
 }
 
 
-void plots_reader::fill(double theta[3], double weights[15000]) {
+void plots_reader::fill(double theta[3], double weights[10000]) {
 
     hist_lambda->Reset();
     hist_mu->Reset();
@@ -50,9 +50,9 @@ void plots_reader::fill(double theta[3], double weights[15000]) {
     meas[1] = hist_mu->GetMean();
     meas[2] = hist_nu->GetMean();
 
-    error[0] = 2. * hist_lambda->GetStdDev();
-    error[1] = 2. * hist_mu->GetStdDev();
-    error[2] = 2. * hist_nu->GetStdDev();
+    error[0] = hist_lambda->GetStdDev();
+    error[1] = hist_mu->GetStdDev();
+    error[2] = hist_nu->GetStdDev();
 
     score[0] = (theta[0] - meas[0])/error[0];
     score[1] = (theta[1] - meas[1])/error[1];

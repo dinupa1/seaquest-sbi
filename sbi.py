@@ -74,8 +74,8 @@ test_tree = uproot.open("./data/outputs.root:test_tree")
 X_test = test_tree["X"].array().to_numpy()
 theta_test = test_tree["theta"].array().to_numpy()
 
-# theta_prior = uproot.open("./data/outputs.root:prior_tree")
-# theta_0_test = theta_prior["theta_0"].array().to_numpy()
+prior_tree = uproot.open("./data/outputs.root:prior_tree")
+theta_prior = prior_tree["theta_0"].array().to_numpy()
 
 ds_ratio = ratio_dataset(X_train, theta_train)
 
@@ -95,18 +95,18 @@ tr.fit()
 # test data
 #
 
-# for i in range(len(theta_test)):
-#     X_test_array = np.array([X_test[i] for j in range(len(theta_0_test))])
-#     tree["theta"].append(theta_test[i])
-#     tree["weights"].append(test_ratio_model(model, X_test_array, theta_0_test, batch_size=batch_size, device=dvc))
-#
-#     if i%1000 == 0:
-#         print(f"[===> {i} tests are done ]")
-#
-# outfile = uproot.recreate("./data/eval.root", compression=uproot.ZLIB(4))
-# outfile["tree"] = tree
-# outfile["prior"] = {"theta_0": theta_0_test,}
-# outfile.close()
+for i in range(len(theta_test)):
+    X_test_array = np.array([X_test[i] for j in range(len(theta_prior))])
+    tree["theta"].append(theta_test[i])
+    tree["weights"].append(test_ratio_model(model, X_test_array, theta_prior, batch_size=batch_size, device=dvc))
+
+    if i%1000 == 0:
+        print(f"[===> {i} tests are done ]")
+
+outfile = uproot.recreate("./data/eval.root", compression=uproot.ZLIB(4))
+outfile["tree"] = tree
+outfile["prior"] = {"theta_0": theta_prior,}
+outfile.close()
 
 
 #
@@ -119,46 +119,46 @@ tr.fit()
 
 
 # metropolis_hastings
-posterior = metropolis_hastings(model, X_test[0], num_samples=10000, proposal_std=0.1, device=dvc)
-
-theta_mean = np.mean(posterior, axis=0)
-theta_std = np.std(posterior, axis=0)
-
-
-bins = np.linspace(-1., 1., 31)
-plt.figure(figsize=(8., 8.))
-plt.hist(posterior[:, 0], bins=bins, histtype="step", density=True)
-plt.axvline(x=theta_test[0, 0], linestyle="--", color="r", label=r"$\lambda_{true}$")
-plt.xlabel(r"$\lambda$")
-plt.ylabel(r"$p(\lambda|x)$")
-plt.text(0., 0.1, f"$\lambda_{{fit}}$ = {theta_mean[0]:.3f} +/- {theta_std[0]:.3f}")
-plt.legend(frameon=False)
-plt.tight_layout()
-plt.savefig("plots/p_lambda_x.png")
-plt.close("all")
-
-
-
-bins = np.linspace(-0.5, 0.5, 31)
-plt.figure(figsize=(8., 8.))
-plt.hist(posterior[:, 1], bins=bins, histtype="step", density=True)
-plt.axvline(x=theta_test[0, 1], linestyle="--", color="r", label=r"$\mu_{true}$")
-plt.xlabel(r"$\mu$")
-plt.ylabel(r"$p(\mu|x)$")
-plt.text(0., 0.1, f"$\mu_{{fit}}$ = {theta_mean[1]:.3f} +/- {theta_std[1]:.3f}")
-plt.legend(frameon=False)
-plt.tight_layout()
-plt.savefig("plots/p_mu_x.png")
-plt.close("all")
-
-
-plt.figure(figsize=(8., 8.))
-plt.hist(posterior[:, 2], bins=bins, histtype="step", density=True)
-plt.axvline(x=theta_test[0, 2], linestyle="--", color="r", label=r"$\nu_{true}$")
-plt.xlabel(r"$\nu$")
-plt.ylabel(r"$p(\nu|x)$")
-plt.text(0., 0.1, f"$\nu_{{fit}}$ = {theta_mean[2]:.3f} +/- {theta_std[2]:.3f}")
-plt.legend(frameon=False)
-plt.tight_layout()
-plt.savefig("plots/p_nu_x.png")
-plt.close("all")
+# posterior = metropolis_hastings(model, X_test[0], num_samples=10000, proposal_std=0.1, device=dvc)
+#
+# theta_mean = np.mean(posterior, axis=0)
+# theta_std = np.std(posterior, axis=0)
+#
+#
+# bins = np.linspace(-1., 1., 31)
+# plt.figure(figsize=(8., 8.))
+# plt.hist(posterior[:, 0], bins=bins, histtype="step", density=True)
+# plt.axvline(x=theta_test[0, 0], linestyle="--", color="r", label=r"$\lambda_{true}$")
+# plt.xlabel(r"$\lambda$")
+# plt.ylabel(r"$p(\lambda|x)$")
+# plt.text(0., 0.1, f"$\lambda_{{fit}}$ = {theta_mean[0]:.3f} +/- {theta_std[0]:.3f}")
+# plt.legend(frameon=False)
+# plt.tight_layout()
+# plt.savefig("plots/p_lambda_x.png")
+# plt.close("all")
+#
+#
+#
+# bins = np.linspace(-0.5, 0.5, 31)
+# plt.figure(figsize=(8., 8.))
+# plt.hist(posterior[:, 1], bins=bins, histtype="step", density=True)
+# plt.axvline(x=theta_test[0, 1], linestyle="--", color="r", label=r"$\mu_{true}$")
+# plt.xlabel(r"$\mu$")
+# plt.ylabel(r"$p(\mu|x)$")
+# plt.text(0., 0.1, f"$\mu_{{fit}}$ = {theta_mean[1]:.3f} +/- {theta_std[1]:.3f}")
+# plt.legend(frameon=False)
+# plt.tight_layout()
+# plt.savefig("plots/p_mu_x.png")
+# plt.close("all")
+#
+#
+# plt.figure(figsize=(8., 8.))
+# plt.hist(posterior[:, 2], bins=bins, histtype="step", density=True)
+# plt.axvline(x=theta_test[0, 2], linestyle="--", color="r", label=r"$\nu_{true}$")
+# plt.xlabel(r"$\nu$")
+# plt.ylabel(r"$p(\nu|x)$")
+# plt.text(0., 0.1, f"$\nu_{{fit}}$ = {theta_mean[2]:.3f} +/- {theta_std[2]:.3f}")
+# plt.legend(frameon=False)
+# plt.tight_layout()
+# plt.savefig("plots/p_nu_x.png")
+# plt.close("all")
