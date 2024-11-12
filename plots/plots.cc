@@ -21,11 +21,11 @@ plots_reader::plots_reader(TFile* inputs) {
     prior = (TTree*)inputs->Get("prior");
     n_prior = prior->GetEntries();
 
-    prior->SetBranchAddress("theta_0", theta_0);
+    prior->SetBranchAddress("theta", theta);
 
-    hist_lambda = new TH1D("hist_lambda", "; #lambda; p(#lambda | x)", 20, -1., 1.);
-    hist_mu = new TH1D("hist_mu", "; #mu; p(#mu | x)", 20, -0.5, 0.5);
-    hist_nu = new TH1D("hist_nu", "; #nu; p(#nu | x)", 20, -0.5, 0.5);
+    hist_lambda = new TH1D("hist_lambda", "; #lambda; p(#lambda | x)", 20, -1.5, 1.5);
+    hist_mu = new TH1D("hist_mu", "; #mu; p(#mu | x)", 20, -0.8, 0.8);
+    hist_nu = new TH1D("hist_nu", "; #nu; p(#nu | x)", 20, -0.8, 0.8);
 
     lambda_meas = new TGraphErrors();
     mu_meas = new TGraphErrors();
@@ -33,7 +33,7 @@ plots_reader::plots_reader(TFile* inputs) {
 }
 
 
-void plots_reader::fill(double theta[3], double weights[10000]) {
+void plots_reader::fill(double theta_true[3], double weights[10000]) {
 
     hist_lambda->Reset();
     hist_mu->Reset();
@@ -41,9 +41,9 @@ void plots_reader::fill(double theta[3], double weights[10000]) {
 
     for(int ii = 0; ii < n_prior; ii++) {
         prior->GetEntry(ii);
-        hist_lambda->Fill(theta_0[0], weights[ii]);
-        hist_mu->Fill(theta_0[1], weights[ii]);
-        hist_nu->Fill(theta_0[2], weights[ii]);
+        hist_lambda->Fill(theta[0], weights[ii]);
+        hist_mu->Fill(theta[1], weights[ii]);
+        hist_nu->Fill(theta[2], weights[ii]);
     }
 
     meas[0] = hist_lambda->GetMean();
@@ -54,13 +54,13 @@ void plots_reader::fill(double theta[3], double weights[10000]) {
     error[1] = hist_mu->GetStdDev();
     error[2] = hist_nu->GetStdDev();
 
-    score[0] = (theta[0] - meas[0])/error[0];
-    score[1] = (theta[1] - meas[1])/error[1];
-    score[2] = (theta[2] - meas[2])/error[2];
+    score[0] = (theta_true[0] - meas[0])/error[0];
+    score[1] = (theta_true[1] - meas[1])/error[1];
+    score[2] = (theta_true[2] - meas[2])/error[2];
 }
 
 
-void plots_reader::plot_one(double theta, double meas, double error, TH1D* hist, TGraphErrors* graph, TString pname) {
+void plots_reader::plot_one(double theta_true, double meas, double error, TH1D* hist, TGraphErrors* graph, TString pname) {
 
     double y_max = hist->GetMaximum();
 
@@ -72,7 +72,7 @@ void plots_reader::plot_one(double theta, double meas, double error, TH1D* hist,
     graph->SetMarkerColor(4);
     graph->SetMarkerStyle(21);
 
-    TLine* ll = new TLine(theta, 0., theta, 1.);
+    TLine* ll = new TLine(theta_true, 0., theta_true, 1.);
     ll->SetLineColor(2);
     ll->SetLineWidth(2);
     ll->SetLineStyle(2);
@@ -88,20 +88,20 @@ void plots_reader::plot_one(double theta, double meas, double error, TH1D* hist,
 }
 
 
-void plots_reader::plot(double theta[3], int ii) {
+void plots_reader::plot(double theta_true[3], int ii) {
 
     TString pic_lambda = Form("./plots/lambda_%d.png", ii);
-    plot_one(theta[0], meas[0], error[0], hist_lambda, lambda_meas, pic_lambda);
+    plot_one(theta_true[0], meas[0], error[0], hist_lambda, lambda_meas, pic_lambda);
 
     TString pic_mu = Form("./plots/mu_%d.png", ii);
-    plot_one(theta[1], meas[1], error[1], hist_mu, mu_meas, pic_mu);
+    plot_one(theta_true[1], meas[1], error[1], hist_mu, mu_meas, pic_mu);
 
     TString pic_nu = Form("./plots/nu_%d.png", ii);
-    plot_one(theta[2], meas[2], error[2], hist_nu, nu_meas, pic_nu);
+    plot_one(theta_true[2], meas[2], error[2], hist_nu, nu_meas, pic_nu);
 }
 
 
-void plots_reader::histograms(double theta[3], TH1D* lambda_score, TH1D* mu_score, TH1D* nu_score, TH1D* lambda_error, TH1D* mu_error, TH1D* nu_error, TH2D* lambda_true_score, TH2D* mu_true_score, TH2D* nu_true_score, TH2D* lambda_true_error, TH2D* mu_true_error, TH2D* nu_true_error) {
+void plots_reader::histograms(double theta_true[3], TH1D* lambda_score, TH1D* mu_score, TH1D* nu_score, TH1D* lambda_error, TH1D* mu_error, TH1D* nu_error, TH2D* lambda_true_score, TH2D* mu_true_score, TH2D* nu_true_score, TH2D* lambda_true_error, TH2D* mu_true_error, TH2D* nu_true_error) {
 
     lambda_score->Fill(score[0]);
     mu_score->Fill(score[1]);
@@ -111,25 +111,25 @@ void plots_reader::histograms(double theta[3], TH1D* lambda_score, TH1D* mu_scor
     mu_error->Fill(error[1]);
     nu_error->Fill(error[2]);
 
-    lambda_true_score->Fill(theta[0], score[0]);
-    mu_true_score->Fill(theta[1], score[1]);
-    nu_true_score->Fill(theta[2], score[2]);
+    lambda_true_score->Fill(theta_true[0], score[0]);
+    mu_true_score->Fill(theta_true[1], score[1]);
+    nu_true_score->Fill(theta_true[2], score[2]);
 
-    lambda_true_error->Fill(theta[0], error[0]);
-    mu_true_error->Fill(theta[1], error[1]);
-    nu_true_error->Fill(theta[2], error[2]);
+    lambda_true_error->Fill(theta_true[0], error[0]);
+    mu_true_error->Fill(theta_true[1], error[1]);
+    nu_true_error->Fill(theta_true[2], error[2]);
 }
 
 
-void plots_reader::graphs(double theta[3], TGraphErrors* lambda_graph, TGraphErrors* mu_graph, TGraphErrors* nu_graph, int ii) {
+void plots_reader::graphs(double theta_true[3], TGraphErrors* lambda_graph, TGraphErrors* mu_graph, TGraphErrors* nu_graph, int ii) {
 
-    lambda_graph->SetPoint(ii, theta[0], meas[0]);
+    lambda_graph->SetPoint(ii, theta_true[0], meas[0]);
     lambda_graph->SetPointError(ii, 0., error[0]);
 
-    mu_graph->SetPoint(ii, theta[1], meas[1]);
+    mu_graph->SetPoint(ii, theta_true[1], meas[1]);
     mu_graph->SetPointError(ii, 0., error[1]);
 
-    nu_graph->SetPoint(ii, theta[2], meas[2]);
+    nu_graph->SetPoint(ii, theta_tue[2], meas[2]);
     nu_graph->SetPointError(ii, 0., error[2]);
 }
 
@@ -141,7 +141,7 @@ ratio_plots::ratio_plots() {
     tree = (TTree*)inputs->Get("tree");
     n_events = tree->GetEntries();
 
-    tree->SetBranchAddress("theta", theta);
+    tree->SetBranchAddress("theta", theta_true);
     tree->SetBranchAddress("weights", weights);
 
     rdr = new plots_reader(inputs);
@@ -158,13 +158,13 @@ ratio_plots::ratio_plots() {
     mu_graph = new TGraphErrors();
     nu_graph = new TGraphErrors();
 
-    lambda_true_score = new TH2D("lambda_true_score", "; #lambda_{true}; #frac{#lambda_{true} - #lambda_{meas}}{#lambda_{error}}", 30, -1., 1., 30, -5., 5.);
-    mu_true_score = new TH2D("mu_true_score", "; #mu_{true}; #frac{#mu_{true} - #mu_{meas}}{#mu_{error}}", 30, -0.5, 0.5, 30, -5., 5.);
-    nu_true_score = new TH2D("nu_true_score", "; #nu_{true}; #frac{#nu_{true} - #nu_{meas}}{#nu_{error}}", 30, -0.5, 0.5, 30, -5., 5.);
+    lambda_true_score = new TH2D("lambda_true_score", "; #lambda_{true}; #frac{#lambda_{true} - #lambda_{meas}}{#lambda_{error}}", 30, -1.5, 1.5, 30, -5., 5.);
+    mu_true_score = new TH2D("mu_true_score", "; #mu_{true}; #frac{#mu_{true} - #mu_{meas}}{#mu_{error}}", 30, -0.8, 0.8, 30, -5., 5.);
+    nu_true_score = new TH2D("nu_true_score", "; #nu_{true}; #frac{#nu_{true} - #nu_{meas}}{#nu_{error}}", 30, -0.8, 0.8, 30, -5., 5.);
 
-    lambda_true_error = new TH2D("lambda_true_error", "; #lambda_{true}; #lambda_{error}", 30, -1., 1., 30, 0., 1.);
-    mu_true_error = new TH2D("mu_true_error", "; #mu_{true}; #mu_{error}", 30, -0.5, 0.5, 30, 0., 1.);
-    nu_true_error = new TH2D("nu_true_error", "; #nu_{true}; #nu_{error}", 30, -0.5, 0.5, 30, 0., 1.);
+    lambda_true_error = new TH2D("lambda_true_error", "; #lambda_{true}; #lambda_{error}", 30, -1.5, 1.5, 30, 0., 1.);
+    mu_true_error = new TH2D("mu_true_error", "; #mu_{true}; #mu_{error}", 30, -0.8, 0.8, 30, 0., 1.);
+    nu_true_error = new TH2D("nu_true_error", "; #nu_{true}; #nu_{error}", 30, -0.8, 0.8, 30, 0., 1.);
 
     can = new TCanvas("can", "can", 800, 800);
 }
@@ -174,10 +174,10 @@ void ratio_plots::fill() {
 
     for(int ii = 0; ii < n_events; ii++) {
         tree->GetEntry(ii);
-        rdr->fill(theta, weights);
-        if(ii < 5){rdr->plot(theta, ii);}
-        if(ii < 100){rdr->graphs(theta, lambda_graph, mu_graph, nu_graph, ii);}
-        rdr->histograms(theta, lambda_score, mu_score, nu_score, lambda_error, mu_error, nu_error, lambda_true_score, mu_true_score, nu_true_score, lambda_true_error, mu_true_error, nu_true_error);
+        rdr->fill(theta_true, weights);
+        if(ii < 5){rdr->plot(theta_true, ii);}
+        if(ii < 100){rdr->graphs(theta_true, lambda_graph, mu_graph, nu_graph, ii);}
+        rdr->histograms(theta_true, lambda_score, mu_score, nu_score, lambda_error, mu_error, nu_error, lambda_true_score, mu_true_score, nu_true_score, lambda_true_error, mu_true_error, nu_true_error);
     }
 }
 
@@ -235,7 +235,7 @@ void ratio_plots::plot() {
     plot_hist2D(mu_true_error, "./plots/mu_true_error.png");
     plot_hist2D(nu_true_error, "./plots/nu_true_error.png");
 
-    plot_graph(lambda_graph, -1., 1., "lambda_graph", "; #lambda_{true}; #lambda_{meas}", "./plots/lambda_graph.png");
-    plot_graph(mu_graph, -0.5, 0.5, "mu_graph", "; #mu_{true}; #mu_{meas}", "./plots/mu_graph.png");
-    plot_graph(nu_graph, -0.5, 0.5, "nu_graph", "; #nu_{true}; #nu_{meas}", "./plots/nu_graph.png");
+    plot_graph(lambda_graph, -1.5, 1.5, "lambda_graph", "; #lambda_{true}; #lambda_{meas}", "./plots/lambda_graph.png");
+    plot_graph(mu_graph, -0.8, 0.8, "mu_graph", "; #mu_{true}; #mu_{meas}", "./plots/mu_graph.png");
+    plot_graph(nu_graph, -0.8, 0.8, "nu_graph", "; #nu_{true}; #nu_{meas}", "./plots/nu_graph.png");
 }

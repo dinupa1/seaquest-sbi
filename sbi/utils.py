@@ -23,25 +23,28 @@ def mean_and_error(prior, weights):
     return xmean, np.sqrt(sigma2)
 
 
-def metropolis_hastings(ratio_model, X, num_samples=10000, device=None):
+
+def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.1, device=None):
     chain = []
 
     # Initialize the parameter vector
-    theta_current = torch.tensor([0., 0., 0.]).unsqueeze(0).double().to(device)
-    X_tensor = torch.from_numpy(X).unsqueeze(0).double().to(device)
-
-    theta_min = torch.tensor([-1., -0.5, -0.5])
-    theta_max = torch.tensor([1., 0.5, 0.5])
+    theta_current = torch.tensor([0., 0., 0.]).double().to(device)
+    X_tensor = torch.from_numpy(X).double().to(device)
 
     ratio_model.eval()
     with torch.no_grad():
         for _ in range(num_samples):
 
-            theta_proposal = theta_max + (theta_min - theta_max) * torch.rand(3)
-            theta_proposal = theta_proposal.unsqueeze(0).double().to(device)
+            theta_proposal = torch.randn(3) * torch.tensor([proposal_std, proposal_std, proposal_std]) + theta_current
 
-            log_r_current, _ = ratio_model(X_tensor, theta_current)
-            log_r_proposal, _ = ratio_model(X_tensor, theta_proposal)
+            if (theta_proposal[0] < -1.5 or 1.5 < theta_proposal[0] or theta_proposal[1] < -0.8 or 0.8 < theta_proposal[1] or theta_proposal[2] < -0.8 or 0.8 < theta_proposal[2]):
+                chain.append(theta_current.cpu().numpy())
+                continue
+
+            theta_proposal = theta_proposal.double().to(device)
+
+            log_r_current, _ = ratio_model(X_tensor.unsqueeze(0), theta_current.unsqueeze(0))
+            log_r_proposal, _ = ratio_model(X_tensor.unsqueeze(0), theta_proposal.unsqueeze(0))
 
             threshold = np.random.uniform(0., 1.)
 

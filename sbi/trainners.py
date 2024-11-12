@@ -109,8 +109,8 @@ class ratio_trainner:
                 loss_a = self.criterion(logit_dep_a, ones) + self.criterion(logit_ind_a, zeros)
                 loss_b = self.criterion(logit_dep_b, ones) + self.criterion(logit_ind_b, zeros)
 
-                auc_a = roc_auc_score(torch.cat([ones, zeros], dim=1).cpu().numpy().reshape(-1), torch.cat([logit_dep_a, logit_ind_a]).cpu().numpy().reshape(-1))
-                auc_b = roc_auc_score(torch.cat([ones, zeros], dim=1).cpu().numpy().reshape(-1), torch.cat([logit_dep_b, logit_ind_b]).cpu().numpy().reshape(-1))
+                auc_a = roc_auc_score(torch.cat([ones, zeros]).cpu().numpy().reshape(-1), torch.cat([logit_dep_a, logit_ind_a]).cpu().numpy().reshape(-1))
+                auc_b = roc_auc_score(torch.cat([ones, zeros]).cpu().numpy().reshape(-1), torch.cat([logit_dep_b, logit_ind_b]).cpu().numpy().reshape(-1))
 
                 loss += loss_a + loss_b
                 auc += auc_a + auc_b

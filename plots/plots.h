@@ -28,17 +28,17 @@ class plots_reader {
 public:
     TTree* prior;
     int n_prior;
-    double theta_0[3];
+    double theta[3];
     double meas[3];
     double error[3];
     double score[3];
     plots_reader(TFile* inputs);
     virtual ~plots_reader(){;}
-    void fill(double theta[3], double weights[10000]);
-    void plot_one(double theta, double meas, double error, TH1D* hist, TGraphErrors* graph, TString pname);
-    void plot(double theta[3], int ii);
-    void histograms(double theta[3], TH1D* lambda_score, TH1D* mu_score, TH1D* nu_score, TH1D* lambda_error, TH1D* mu_error, TH1D* nu_error, TH2D* lambda_true_score, TH2D* mu_true_score, TH2D* nu_true_score, TH2D* lambda_true_error, TH2D* mu_true_error, TH2D* nu_true_error);
-    void graphs(double theta[3], TGraphErrors* lambda_graph, TGraphErrors* mu_graph, TGraphErrors* nu_graph, int ii);
+    void fill(double theta_true[3], double weights[10000]);
+    void plot_one(double theta_true, double meas, double error, TH1D* hist, TGraphErrors* graph, TString pname);
+    void plot(double theta_true[3], int ii);
+    void histograms(double theta_true[3], TH1D* lambda_score, TH1D* mu_score, TH1D* nu_score, TH1D* lambda_error, TH1D* mu_error, TH1D* nu_error, TH2D* lambda_true_score, TH2D* mu_true_score, TH2D* nu_true_score, TH2D* lambda_true_error, TH2D* mu_true_error, TH2D* nu_true_error);
+    void graphs(double theta_true[3], TGraphErrors* lambda_graph, TGraphErrors* mu_graph, TGraphErrors* nu_graph, int ii);
 };
 
 
@@ -63,7 +63,7 @@ class ratio_plots {
     TH2D* mu_true_error;
     TH2D* nu_true_error;
 public:
-    double theta[3];
+    double theta_true[3];
     double weights[15000];
     TTree* tree;
     int n_events;

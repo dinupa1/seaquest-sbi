@@ -43,7 +43,7 @@ torch.cuda.manual_seed(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-batch_size: int = 5000
+batch_size: int = 256
 n_train: int = 500000
 n_test: int = 5000
 
@@ -76,7 +76,7 @@ X_test = test_tree["X"].array().to_numpy()
 theta_test = test_tree["theta"].array().to_numpy()
 
 prior_tree = uproot.open("./data/outputs.root:prior_tree")
-theta_prior = prior_tree["theta_0"].array().to_numpy()
+theta_prior = prior_tree["theta"].array().to_numpy()
 
 ds_ratio = ratio_dataset(X_train, theta_train)
 
@@ -86,7 +86,7 @@ train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False)
 
 model = ratio_net().double().to(dvc)
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.001, amsgrad=True)
 criterion = nn.BCELoss()
 
 tr = ratio_trainner(train_loader, val_loader, model, criterion, optimizer, device=dvc)
@@ -106,7 +106,7 @@ for i in range(len(theta_test)):
 
 outfile = uproot.recreate("./data/eval.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
-outfile["prior"] = {"theta_0": theta_prior,}
+outfile["prior"] = {"theta": theta_prior,}
 outfile.close()
 
 
@@ -120,7 +120,7 @@ outfile.close()
 
 
 metropolis_hastings
-posterior = metropolis_hastings(model, X_test[0], num_samples=10000, device=dvc)
+posterior = metropolis_hastings(model, X_test[0], num_samples=10000, proposal_std=0.1, device=dvc)
 
 theta_mean = np.mean(posterior, axis=0)
 theta_std = np.std(posterior, axis=0)

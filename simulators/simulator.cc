@@ -106,7 +106,7 @@ void simulator::samples(int n_train, int n_test) {
     std::cout << "[ ===> prior distribution ]" << std::endl;
 
     for(int ii = 0; ii < n_data; ii++) {
-        prior(theta, -1., 1., -0.5, 0.5, -0.5, 0.5);
+        prior(theta, -1.5, 1.5, -0.8, 0.8, -0.8, 0.8);
         prior_tree->Fill();
     }
 
@@ -114,7 +114,7 @@ void simulator::samples(int n_train, int n_test) {
 
     for(int ii = 0; ii < n_train; ii++) {
 
-        prior(theta, -1., 1., -0.5, 0.5, -0.5, 0.5);
+        prior(theta, -1.5, 1.5, -0.8, 0.8, -0.8, 0.8);
 
         std::unique_ptr<TH2D> hist_0(new TH2D("hist_0", "", 10, -pi, pi, 10, -0.4, 0.4));
         std::unique_ptr<TH2D> hist_1(new TH2D("hist_1", "", 10, -1., 1., 10, -0.4, 0.4));
@@ -133,7 +133,7 @@ void simulator::samples(int n_train, int n_test) {
 
     for(int ii = 0; ii < n_test; ii++) {
 
-        prior(theta, -1., 1., -0.5, 0.5, -0.5, 0.5);
+        prior(theta, -1., 1., -0.4, 0.4, -0.4, 0.4);
 
         std::unique_ptr<TH2D> hist_0(new TH2D("hist_0", "", 10, -pi, pi, 10, -0.4, 0.4));
         std::unique_ptr<TH2D> hist_1(new TH2D("hist_1", "", 10, -1., 1., 10, -0.4, 0.4));
