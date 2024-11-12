@@ -87,6 +87,7 @@ class ratio_trainner:
         num_iterations = len(data_loader)//2
         loader = iter(data_loader)
         self.ratio_model.eval()
+        loss, auc = 0, 0
         with torch.no_grad():
             for batch in range(num_iterations):
 
