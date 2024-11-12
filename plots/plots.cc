@@ -129,7 +129,7 @@ void plots_reader::graphs(double theta_true[3], TGraphErrors* lambda_graph, TGra
     mu_graph->SetPoint(ii, theta_true[1], meas[1]);
     mu_graph->SetPointError(ii, 0., error[1]);
 
-    nu_graph->SetPoint(ii, theta_tue[2], meas[2]);
+    nu_graph->SetPoint(ii, theta_true[2], meas[2]);
     nu_graph->SetPointError(ii, 0., error[2]);
 }
 
