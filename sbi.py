@@ -97,22 +97,10 @@ for i in range(len(theta_test)):
         trees["theta"].append(theta_test[i])
         trees["posterior"].append(posterior)
 
+    print(f"[===> {i+1} tests are done]")
+
 
 outfile = uproot.recreate("./data/eval.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
 outfile["trees"] = trees
 outfile.close()
-
-
-# for i in range(len(theta_test)):
-#     X_test_array = np.array([X_test[i] for j in range(len(theta_prior))])
-#     tree["theta"].append(theta_test[i])
-#     tree["weights"].append(test_ratio_model(model, X_test_array, theta_prior, batch_size=batch_size, device=dvc))
-#
-#     if i%1000 == 0:
-#         print(f"[===> {i} tests are done ]")
-#
-# outfile = uproot.recreate("./data/eval.root", compression=uproot.ZLIB(4))
-# outfile["tree"] = tree
-# outfile["prior"] = {"theta": theta_prior,}
-# outfile.close()
