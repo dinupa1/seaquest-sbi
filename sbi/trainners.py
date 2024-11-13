@@ -115,7 +115,7 @@ class ratio_trainner:
                 loss += loss_a + loss_b
                 auc += auc_a + auc_b
 
-            return loss/num_iterations, auc/num_iterations
+            return loss/num_iterations, auc/(2. * num_iterations)
             
     def fit(self, n_epoch=None):
         max_epoch = (self.epoch + n_epoch + 1) if n_epoch else self.max_epoch

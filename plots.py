@@ -1,9 +1,12 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
-from plots import plots_reader
-from plots import ratio_plots
+import mplhep as hep
+
+import uproot
+import awkward as ak
 
 
-rp = ratio_plots()
-rp.fill()
-rp.plot()
+plt.style.use([hep.style.ROOT, hep.style.firamath])
+
+
