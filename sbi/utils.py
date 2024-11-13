@@ -27,7 +27,6 @@ def mean_and_error(prior, weights):
 def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.1, device=None):
     chain = []
 
-    # Initialize the parameter vector
     theta_current = torch.tensor([0., 0., 0.]).double().to(device)
     X_tensor = torch.from_numpy(X).double().to(device)
 
@@ -35,13 +34,11 @@ def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.1, dev
     with torch.no_grad():
         for _ in range(num_samples):
 
-            theta_proposal = torch.randn(3) * torch.tensor([proposal_std, proposal_std, proposal_std]) + theta_current
+            theta_proposal = torch.randn(3).double().to(device) * torch.tensor([proposal_std, proposal_std, proposal_std]).double().to(device) + theta_current
 
             if (theta_proposal[0] < -1.5 or 1.5 < theta_proposal[0] or theta_proposal[1] < -0.8 or 0.8 < theta_proposal[1] or theta_proposal[2] < -0.8 or 0.8 < theta_proposal[2]):
                 chain.append(theta_current.cpu().numpy())
                 continue
-
-            theta_proposal = theta_proposal.double().to(device)
 
             log_r_current, _ = ratio_model(X_tensor.unsqueeze(0), theta_current.unsqueeze(0))
             log_r_proposal, _ = ratio_model(X_tensor.unsqueeze(0), theta_proposal.unsqueeze(0))

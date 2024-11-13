@@ -45,10 +45,8 @@ public:
     TFile* outputs;
     TTree* train_tree;
     TTree* test_tree;
-    TTree* prior_tree;
     simulator();
     virtual ~simulator(){;}
-    void prior(double theta[3], double lambda_min, double lambda_max, double mu_min, double mu_max, double nu_min, double nu_max);
     void read(double X[3][10][10], std::unique_ptr<TH2D> &hist_0, std::unique_ptr<TH2D> &hist_1, std::unique_ptr<TH2D> &hist_2);
     void samples(int n_train, int n_test);
     void save();

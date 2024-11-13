@@ -20,7 +20,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
 from sbi import resnet_10x10
-from sbi import ratio_net
 from sbi import ratio_dataset
 from sbi import ratio_trainner
 from sbi import test_ratio_model
@@ -43,7 +42,7 @@ torch.cuda.manual_seed(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-batch_size: int = 1000
+batch_size: int = 1024
 
 
 #
@@ -77,27 +76,30 @@ tr.fit()
 # test data
 #
 
-theta_meas = []
-theta_error = []
-trees = {}
+tree = {
+        "theta": [],
+        "meas": [],
+        "error": [],
+    }
+
+trees = {
+        "theta": [],
+        "posterior": [],
+    }
 
 for i in range(len(theta_test)):
     posterior = metropolis_hastings(model, X_test[i], num_samples=10000, proposal_std=0.1, device=dvc)
-    theta_meas.append(np.mean(posterior, axis=0))
-    theta_error.append(np.std(posterior, axis=0))
+    tree["meas"].append(theta_test[i])
+    tree["meas"].append(np.mean(posterior, axis=0))
+    tree["error"].append(np.std(posterior, axis=0))
 
     if i < 5:
-        trees["theta"] = theta_test[i]
-        trees["posterior"] = posterior
+        trees["theta"].append(theta_test[i])
+        trees["posterior"].append(posterior)
 
 
 outfile = uproot.recreate("./data/eval.root", compression=uproot.ZLIB(4))
-outfile["tree"] = {
-        "theta": theta_test,
-        "meas": np.array(theta_meas),
-        "error": np.array(theta_error),
-    }
-
+outfile["tree"] = tree
 outfile["trees"] = trees
 outfile.close()
 

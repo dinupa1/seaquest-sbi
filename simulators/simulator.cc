@@ -62,9 +62,6 @@ simulator::simulator():generator(std::make_unique<TRandom3>(42)) {
 
     outputs = new TFile("./data/outputs.root", "recreate");
 
-    prior_tree = new TTree("prior_tree", "prior_tree");
-    prior_tree->Branch("theta", theta, "theta[3]/D");
-
     train_tree = new TTree("train_tree", "train_tree");
     train_tree->Branch("X", X, "X[3][10][10]/D");
     train_tree->Branch("theta", theta, "theta[3]/D");
@@ -72,15 +69,6 @@ simulator::simulator():generator(std::make_unique<TRandom3>(42)) {
     test_tree = new TTree("test_tree", "test_tree");
     test_tree->Branch("X", X, "X[3][10][10]/D");
     test_tree->Branch("theta", theta, "theta[3]/D");
-}
-
-
-void simulator::prior(double theta[3], double lambda_min, double lambda_max, double mu_min, double mu_max, double nu_min, double nu_max) {
-
-    theta[0] = generator->Uniform(lambda_min, lambda_max);
-    theta[1] = generator->Uniform(mu_min, mu_max);
-    theta[2] = generator->Uniform(nu_min, nu_max);
-    // std::cout << "[ ===> ii "<< 3 * ii << " lambda = " << theta[3* ii + 0] << " mu : " << theta[3* ii + 1] << " nu: " << theta[3* ii + 2] << " ]" << std::endl;
 }
 
 
@@ -101,20 +89,15 @@ void simulator::read(double X[3][10][10], std::unique_ptr<TH2D> &hist_0, std::un
 }
 
 
-void simulator::samples(int n_train, int n_test) {
-
-    std::cout << "[ ===> prior distribution ]" << std::endl;
-
-    for(int ii = 0; ii < n_data; ii++) {
-        prior(theta, -1.5, 1.5, -0.8, 0.8, -0.8, 0.8);
-        prior_tree->Fill();
-    }
+void simulator::samples(int n_train=1024000, int n_test=100) {
 
     std::cout << "[ ===> train events ]" << std::endl;
 
     for(int ii = 0; ii < n_train; ii++) {
 
-        prior(theta, -1.5, 1.5, -0.8, 0.8, -0.8, 0.8);
+        theta[0] = generator->Uniform(-1.5, 1.5);
+        theta[1] = generator->Uniform(-0.6, 0.6);
+        theta[2] = generator->Uniform(-0.6, 0.6);
 
         std::unique_ptr<TH2D> hist_0(new TH2D("hist_0", "", 10, -pi, pi, 10, -0.4, 0.4));
         std::unique_ptr<TH2D> hist_1(new TH2D("hist_1", "", 10, -1., 1., 10, -0.4, 0.4));
@@ -126,14 +109,16 @@ void simulator::samples(int n_train, int n_test) {
         read(X, hist_0, hist_1, hist_2);
         train_tree->Fill();
 
-        if(ii%10000==0){std::cout << "[ ===> " << ii << " events are done ]" << std::endl;}
+        if(ii%10000==0){std::cout << "[ ===> " << ii << " train events are done ]" << std::endl;}
     }
 
     std::cout << "[ ===> test events ]" << std::endl;
 
     for(int ii = 0; ii < n_test; ii++) {
 
-        prior(theta, -1., 1., -0.4, 0.4, -0.4, 0.4);
+        theta[0] = -1. + (2./(n_test -1.)) * ii;
+        theta[1] = -0.4 + (0.8/(n_test -1.)) * ii;
+        theta[0] = -0.4 + (0.8/(n_test -1.)) * ii;
 
         std::unique_ptr<TH2D> hist_0(new TH2D("hist_0", "", 10, -pi, pi, 10, -0.4, 0.4));
         std::unique_ptr<TH2D> hist_1(new TH2D("hist_1", "", 10, -1., 1., 10, -0.4, 0.4));
@@ -145,7 +130,7 @@ void simulator::samples(int n_train, int n_test) {
         read(X, hist_0, hist_1, hist_2);
         test_tree->Fill();
 
-        if(ii%10000==0){std::cout << "[ ===> " << ii << " events are done ]" << std::endl;}
+        if(ii%10==0){std::cout << "[ ===> " << ii << " test events are done ]" << std::endl;}
     }
 }
 
@@ -154,7 +139,6 @@ void simulator::save() {
 
     train_tree->Write();
     test_tree->Write();
-    prior_tree->Write();
 
     outputs->Close();
 }
