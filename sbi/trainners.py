@@ -196,7 +196,7 @@ class ratio_trainner:
                 logits = torch.cat([logits, logit_ind_b]) if logits is not None else logit_ind_b
                 labels = torch.cat([labels, zeros]) if labels is not None else zeros
 
-        self.roc_auc["labels"] = lables.cpu().numpy()
+        self.roc_auc["labels"] = labels.cpu().numpy()
         self.roc_auc["logits"] = logits.cpu().numpy()
 
     def save(self):
