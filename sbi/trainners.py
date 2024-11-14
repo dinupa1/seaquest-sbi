@@ -162,7 +162,7 @@ class ratio_trainner:
                 self.ratio_model.load_state_dict(self.best_state)
                 break
 
-    def roc_auc(self):
+    def val_auc(self):
         num_iterations = len(self.val_dataloader)//2
         loader = iter(self.val_dataloader)
         self.ratio_model.eval()
