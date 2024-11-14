@@ -71,7 +71,7 @@ criterion = nn.BCELoss()
 
 tr = ratio_trainner(train_loader, val_loader, model, criterion, optimizer, device=dvc)
 tr.fit()
-tr.roc_auc()
+tr.val_auc()
 tr.save()
 
 #
