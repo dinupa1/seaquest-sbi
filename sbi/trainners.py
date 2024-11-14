@@ -185,16 +185,16 @@ class ratio_trainner:
                 zeros = torch.zeros([len(theta_a), 1]).double().to(self.device)
 
                 logits = torch.cat([logits, logit_dep_a]) if logits is not None else logit_dep_a
-                labels = torch.cat([labels, ones]) if logits is not None else ones
+                labels = torch.cat([labels, ones]) if labels is not None else ones
 
                 logits = torch.cat([logits, logit_ind_a]) if logits is not None else logit_ind_a
-                labels = torch.cat([labels, zeros]) if logits is not None else zeros
+                labels = torch.cat([labels, zeros]) if labels is not None else zeros
 
                 logits = torch.cat([logits, logit_dep_b]) if logits is not None else logit_dep_b
-                labels = torch.cat([labels, ones]) if logits is not None else ones
+                labels = torch.cat([labels, ones]) if labels is not None else ones
 
                 logits = torch.cat([logits, logit_ind_b]) if logits is not None else logit_ind_b
-                labels = torch.cat([labels, zeros]) if logits is not None else zeros
+                labels = torch.cat([labels, zeros]) if labels is not None else zeros
 
         self.roc_auc["labels"] = lables.cpu().numpy()
         self.roc_auc["logits"] = logits.cpu().numpy()
