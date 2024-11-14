@@ -21,7 +21,7 @@ from sklearn.utils import resample
 
 
 class ratio_trainner:
-    def __init__(self, train_dataloader, val_dataloader, ratio_model, criterion, optimizer, max_epoch=1000, patience=10, device=None):
+    def __init__(self, train_dataloader, val_dataloader, ratio_model, criterion, optimizer, max_epoch=2, patience=10, device=None):
         self.train_dataloader = train_dataloader
         self.val_dataloader = val_dataloader
         self.ratio_model = ratio_model
@@ -44,6 +44,14 @@ class ratio_trainner:
         self.i_try = 0
         self.epoch = 0
         self.size = len(train_dataloader.dataset)
+        self.losses = {
+                "train": [],
+                "validation": [],
+            }
+        self.roc_auc = {
+                "labels": None,
+                "logits": None,
+            }
         
     def backpropagation(self, loss):
         self.optimizer.zero_grad()
@@ -132,6 +140,9 @@ class ratio_trainner:
             # evaluate loss for validation set
             val_loss, val_auc = self.eval_step(self.val_dataloader)
 
+            self.losses["train"].append(train_loss.item())
+            self.losses["validation"].append(val_loss.item())
+
             self.scheduler.step()
 
             print("\r" + " " * (50), end="")
@@ -151,6 +162,48 @@ class ratio_trainner:
                 self.ratio_model.load_state_dict(self.best_state)
                 break
 
+    def roc_auc(self):
+        num_iterations = len(self.val_dataloader)//2
+        loader = iter(self.val_dataloader)
+        self.ratio_model.eval()
+        logits, labels = None, None
+        with torch.no_grad():
+            for batch in range(num_iterations):
+                x_a, theta_a = next(loader)
+                x_a, theta_a = x_a.double().to(self.device), theta_a.double().to(self.device)
+
+                x_b, theta_b = next(loader)
+                x_b, theta_b = x_b.double().to(self.device), theta_b.double().to(self.device)
+
+                _, logit_dep_a = self.ratio_model(x_a, theta_a)
+                _, logit_ind_a = self.ratio_model(x_a, theta_b)
+
+                _, logit_dep_b = self.ratio_model(x_b, theta_b)
+                _, logit_ind_b = self.ratio_model(x_b, theta_a)
+
+                ones = torch.ones([len(theta_a), 1]).double().to(self.device)
+                zeros = torch.zeros([len(theta_a), 1]).double().to(self.device)
+
+                logits = torch.cat([logits, logit_dep_a]) if logits is not None else logit_dep_a
+                labels = torch.cat([labels, ones]) if logits is not None else ones
+
+                logits = torch.cat([logits, logit_ind_a]) if logits is not None else logit_ind_a
+                labels = torch.cat([labels, zeros]) if logits is not None else zeros
+
+                logits = torch.cat([logits, logit_dep_b]) if logits is not None else logit_dep_b
+                labels = torch.cat([labels, ones]) if logits is not None else ones
+
+                logits = torch.cat([logits, logit_ind_b]) if logits is not None else logit_ind_b
+                labels = torch.cat([labels, zeros]) if logits is not None else zeros
+
+        self.roc_auc["labels"] = lables.cpu().numpy()
+        self.roc_auc["logits"] = logits.cpu().numpy()
+
+    def save(self):
+        outfile = uproot.recreate("./data/model.root", compression=uproot.ZLIB(4))
+        outfile["losses"] = self.losses
+        outfile["roc_auc"] = self.roc_auc
+        outfile.close()
 
 def test_ratio_model(ratio_model, X_test, theta_test, batch_size=5000, device=None):
 

@@ -71,6 +71,8 @@ criterion = nn.BCELoss()
 
 tr = ratio_trainner(train_loader, val_loader, model, criterion, optimizer, device=dvc)
 tr.fit()
+tr.roc_auc()
+tr.save()
 
 #
 # test data
@@ -87,9 +89,9 @@ trees = {
         "posterior": [],
     }
 
-for i in range(len(theta_test)):
+for i in range(2):
     posterior = metropolis_hastings(model, X_test[i], num_samples=10000, proposal_std=0.1, device=dvc)
-    tree["meas"].append(theta_test[i])
+    tree["theta"].append(theta_test[i])
     tree["meas"].append(np.mean(posterior, axis=0))
     tree["error"].append(np.std(posterior, axis=0))
 
