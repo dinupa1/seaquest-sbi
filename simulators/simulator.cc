@@ -116,9 +116,9 @@ void simulator::samples(int n_train=1024000, int n_test=100) {
 
     for(int ii = 0; ii < n_test; ii++) {
 
-        theta[0] = -1. + (2./(n_test -1.)) * ii;
-        theta[1] = -0.4 + (0.8/(n_test -1.)) * ii;
-        theta[2] = -0.4 + (0.8/(n_test -1.)) * ii;
+        theta[0] = -1. + (2./(n_test - 1.)) * ii;
+        theta[1] = -0.4 + (0.8/(n_test - 1.)) * ii;
+        theta[2] = -0.4 + (0.8/(n_test - 1.)) * ii;
 
         std::unique_ptr<TH2D> hist_0(new TH2D("hist_0", "", 10, -pi, pi, 10, -0.4, 0.4));
         std::unique_ptr<TH2D> hist_1(new TH2D("hist_1", "", 10, -1., 1., 10, -0.4, 0.4));
