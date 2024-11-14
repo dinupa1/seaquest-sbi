@@ -42,7 +42,7 @@ torch.cuda.manual_seed(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-batch_size: int = 1024
+batch_size: int = 10240
 
 
 #
