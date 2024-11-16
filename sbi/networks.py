@@ -56,21 +56,22 @@ class basic_block(nn.Module):
 class resnet(nn.Module):
     def __init__(self, block, layers, num_classes=1, theta_dim=3):
         super(resnet, self).__init__()
-        self.in_channels = 16
+        self.in_channels = 8
 
-        self.conv_1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn_1 = nn.BatchNorm2d(16)
+        self.embedding = nn.Linear(8 * 8 + theta_dim, 3 * 32 * 32, bias=True)
+        self.emb_sigmoid = nn.Sigmoid()
+
+        self.conv_1 = nn.Conv2d(3, 8, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn_1 = nn.BatchNorm2d(8)
         self.relu = nn.ReLU(inplace=True)
 
-        self.layer_1 = self._make_layer(block, 32, layers[0], stride=1)
-        self.layer_2 = self._make_layer(block, 64, layers[1], stride=2)
+        self.layer_1 = self._make_layer(block, 8, layers[0], stride=1)
+        self.layer_2 = self._make_layer(block, 16, layers[1], stride=2)
+        self.layer_3 = self._make_layer(block, 32, layers[2], stride=2)
+        self.layer_4 = self._make_layer(block, 64, layers[3], stride=2)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Sequential(
-                nn.Linear(64 * block.expansion + theta_dim, 128, bias=True),
-                nn.ReLU(inplace=True),
-                nn.Linear(128, num_classes, bias=True),
-            )
+        self.fc = nn.Linear(64 * block.expansion, num_classes, bias=True)
         self.sigmoid = nn.Sigmoid()
 
     def _make_layer(self, block, out_channels, blocks, stride=1):
@@ -90,28 +91,35 @@ class resnet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x, theta):
-        out = self.conv_1(x)
+        out = torch.flatten(x, 1)
+        out = torch.cat([out, theta], dim=1)
+        out = self.embedding(out)
+        out = self.emb_sigmoid(out)
+
+        out = out.view(-1, 3, 32, 32)
+        out = self.conv_1(out)
         out = self.bn_1(out)
         out = self.relu(out)
 
         out = self.layer_1(out)
         out = self.layer_2(out)
+        out = self.layer_3(out)
+        out = self.layer_4(out)
 
         out = self.avgpool(out)
         out = torch.flatten(out, 1)
-        out = torch.cat([out, theta], dim=1)
         log_r = self.fc(out)
         logit = self.sigmoid(log_r)
         return log_r, logit
 
 
-def resnet_10x10():
-    layers = [2, 2]
+def resnet_8x8():
+    layers = [2, 2, 2, 2]
     return resnet(basic_block, layers)
 
 
-# m = resnet_10x10()
-# x = torch.randn(5, 3, 10, 10)
+# m = resnet_8x8()
+# x = torch.randn(5, 1, 8, 8)
 # theta = torch.randn(5, 3)
 # print(m)
 # total_trainable_params = sum(p.numel() for p in m.parameters() if p.requires_grad)

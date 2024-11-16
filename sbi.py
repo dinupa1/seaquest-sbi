@@ -19,7 +19,7 @@ from sklearn.metrics import roc_auc_score, roc_curve, auc
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
-from sbi import resnet_10x10
+from sbi import resnet_8x8
 from sbi import ratio_dataset
 from sbi import ratio_trainner
 from sbi import test_ratio_model
