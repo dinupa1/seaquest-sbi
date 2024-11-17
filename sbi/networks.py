@@ -24,19 +24,19 @@ class basic_net(nn.Module):
     def __init__(self, input_dim: int = 8 * 8, hidden_dim: int = 128, theta_dim: int = 3, num_classes: int = 1):
         super(basic_net, self).__init__()
 
-        self.feature_net = nn.Sequential(
-                nn.Linear(input_dim, hidden_dim, bias=True),
-                nn.BatchNorm1d(hidden_dim),
-                nn.ReLU(inplace=True),
-                nn.Linear(hidden_dim, theta_dim, bias=True),
-            )
+        # self.feature_net = nn.Sequential(
+        #         nn.Linear(input_dim, hidden_dim, bias=True),
+        #         nn.BatchNorm1d(hidden_dim),
+        #         nn.ReLU(inplace=True),
+        #         nn.Linear(hidden_dim, theta_dim, bias=True),
+        #     )
 
         self.ratio_net = nn.Sequential(
-                nn.Linear(theta_dim + theta_dim, hidden_dim, bias=True),
+                nn.Linear(input_dim + theta_dim, hidden_dim, bias=True),
                 nn.BatchNorm1d(hidden_dim),
                 nn.ReLU(inplace=True),
                 nn.Linear(hidden_dim, hidden_dim, bias=True),
-                nn.BatchNorm1d(),
+                nn.BatchNorm1d(hidden_dim),
                 nn.ReLU(inplace=True),
                 nn.Dropout(p=0.2),
                 nn.Linear(hidden_dim, num_classes, bias=True),
@@ -46,7 +46,7 @@ class basic_net(nn.Module):
 
     def forward(self, x, theta):
         out = torch.flatten(x, 1)
-        out = self.feature_net(out)
+        # out = self.feature_net(out)
         out = torch.cat((out, theta), dim=1)
         log_ratio = self.ratio_net(out)
         logit = self.sigmoid(log_ratio)
