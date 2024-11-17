@@ -86,7 +86,7 @@ plt.savefig("./plots/nu_chain.png")
 plt.close("all")
 
 
-tree = uproot.open("./data/eval_1.root:tree")
+tree = uproot.open("./data/eval.root:tree")
 theta = tree["theta"].array().to_numpy()
 meas = tree["meas"].array().to_numpy()
 error = tree["error"].array().to_numpy()

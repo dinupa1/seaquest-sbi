@@ -19,7 +19,8 @@ from sklearn.metrics import roc_auc_score, roc_curve, auc
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
-from sbi import resnet_8x8
+from sbi import resnet_18
+from sbi import basic_net
 from sbi import ratio_dataset
 from sbi import ratio_trainner
 from sbi import test_ratio_model
@@ -65,7 +66,7 @@ ds_train, ds_val = random_split(ds_ratio, [0.8, 0.2])
 train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False)
 
-model = resnet_10x10().double().to(dvc)
+model = basic_net().double().to(dvc)
 optimizer = optim.Adam(model.parameters(), lr=0.001, amsgrad=True)
 criterion = nn.BCELoss()
 

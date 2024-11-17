@@ -4,5 +4,5 @@ from simulators import sim_reader
 from simulators import simulator
 
 sim = simulator()
-sim.samples(1024000, 100)
+sim.samples(102400, 100)
 sim.save()
