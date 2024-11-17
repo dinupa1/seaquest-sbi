@@ -1,7 +1,6 @@
 from .networks import basic_block
 from .networks import resnet
 from .networks import resnet_18
-from .networks import basic_net
 from .datasets import ratio_dataset
 from .trainners import ratio_trainner
 from .trainners import test_ratio_model
