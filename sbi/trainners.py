@@ -33,7 +33,6 @@ class ratio_trainner:
         self.ratio_model = ratio_model
         self.criterion = criterion
         self.optimizer = optimizer
-        self.scheduler = StepLR(self.optimizer, step_size=20, gamma=0.1)
         self.max_epoch = max_epoch
         self.patience = patience
         self.device = device
@@ -50,14 +49,6 @@ class ratio_trainner:
         self.i_try = 0
         self.epoch = 0
         self.size = len(train_dataloader.dataset)
-        self.losses = {
-                "train": [],
-                "validation": [],
-            }
-        self.roc_auc = {
-                "labels": None,
-                "logits": None,
-            }
         
     def backpropagation(self, loss):
         self.optimizer.zero_grad()
@@ -123,8 +114,8 @@ class ratio_trainner:
                 loss_a = self.criterion(logit_dep_a, ones) + self.criterion(logit_ind_a, zeros)
                 loss_b = self.criterion(logit_dep_b, ones) + self.criterion(logit_ind_b, zeros)
 
-                auc_a = roc_auc(torch.cat([ones, zeros]).cpu().numpy().reshape(-1), torch.cat([logit_dep_a, logit_ind_a]).cpu().numpy().reshape(-1))
-                auc_b = roc_auc(torch.cat([ones, zeros]).cpu().numpy().reshape(-1), torch.cat([logit_dep_b, logit_ind_b]).cpu().numpy().reshape(-1))
+                auc_a = roc_auc(torch.cat([logit_dep_a, logit_ind_a]).cpu().numpy().reshape(-1), torch.cat([ones, zeros]).cpu().numpy().reshape(-1))
+                auc_b = roc_auc(torch.cat([logit_dep_b, logit_ind_b]).cpu().numpy().reshape(-1), torch.cat([ones, zeros]).cpu().numpy().reshape(-1))
 
                 loss += loss_a + loss_b
                 auc += auc_a + auc_b
@@ -146,11 +137,6 @@ class ratio_trainner:
             # evaluate loss for validation set
             val_loss, val_auc = self.eval_step(self.val_dataloader)
 
-            self.losses["train"].append(train_loss.item())
-            self.losses["validation"].append(val_loss.item())
-
-            self.scheduler.step()
-
             print("\r" + " " * (50), end="")
             print("\r" + f"[Epoch {epoch:>3d}] [Train_loss: {train_loss:>5f} Train_auc: {train_auc:>5f}] [Val_loss: {val_loss:>5f} Val_auc: {val_auc:>5f}]")
 
@@ -167,49 +153,6 @@ class ratio_trainner:
                 print(f"[Best_val_loss: {self.best_val_loss:>5f}, Best_ROC_AUC: {self.best_auc:>5f}]")
                 self.ratio_model.load_state_dict(self.best_state)
                 break
-
-    def val_auc(self):
-        num_iterations = len(self.val_dataloader)//2
-        loader = iter(self.val_dataloader)
-        self.ratio_model.eval()
-        logits, labels = None, None
-        with torch.no_grad():
-            for batch in range(num_iterations):
-                x_a, theta_a = next(loader)
-                x_a, theta_a = x_a.double().to(self.device), theta_a.double().to(self.device)
-
-                x_b, theta_b = next(loader)
-                x_b, theta_b = x_b.double().to(self.device), theta_b.double().to(self.device)
-
-                _, logit_dep_a = self.ratio_model(x_a, theta_a)
-                _, logit_ind_a = self.ratio_model(x_a, theta_b)
-
-                _, logit_dep_b = self.ratio_model(x_b, theta_b)
-                _, logit_ind_b = self.ratio_model(x_b, theta_a)
-
-                ones = torch.ones([len(theta_a), 1]).double().to(self.device)
-                zeros = torch.zeros([len(theta_a), 1]).double().to(self.device)
-
-                logits = torch.cat([logits, logit_dep_a]) if logits is not None else logit_dep_a
-                labels = torch.cat([labels, ones]) if labels is not None else ones
-
-                logits = torch.cat([logits, logit_ind_a]) if logits is not None else logit_ind_a
-                labels = torch.cat([labels, zeros]) if labels is not None else zeros
-
-                logits = torch.cat([logits, logit_dep_b]) if logits is not None else logit_dep_b
-                labels = torch.cat([labels, ones]) if labels is not None else ones
-
-                logits = torch.cat([logits, logit_ind_b]) if logits is not None else logit_ind_b
-                labels = torch.cat([labels, zeros]) if labels is not None else zeros
-
-        self.roc_auc["labels"] = labels.cpu().numpy()
-        self.roc_auc["logits"] = logits.cpu().numpy()
-
-    def save(self):
-        outfile = uproot.recreate("./data/model.root", compression=uproot.ZLIB(4))
-        outfile["losses"] = self.losses
-        outfile["roc_auc"] = self.roc_auc
-        outfile.close()
 
 def test_ratio_model(ratio_model, X_test, theta_test, batch_size=5000, device=None):
 

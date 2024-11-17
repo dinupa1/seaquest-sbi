@@ -21,20 +21,24 @@ from sklearn.utils import resample
 
 
 class basic_net(nn.Module):
-    def __init__(self, input_dim: int = 8 * 8, hidden_dim: int = 32, theta_dim: int = 3, num_classes: int = 1):
+    def __init__(self, input_dim: int = 8 * 8, hidden_dim: int = 128, theta_dim: int = 3, num_classes: int = 1):
         super(basic_net, self).__init__()
 
         self.feature_net = nn.Sequential(
                 nn.Linear(input_dim, hidden_dim, bias=True),
+                nn.BatchNorm1d(hidden_dim),
                 nn.ReLU(inplace=True),
                 nn.Linear(hidden_dim, theta_dim, bias=True),
             )
 
         self.ratio_net = nn.Sequential(
                 nn.Linear(theta_dim + theta_dim, hidden_dim, bias=True),
+                nn.BatchNorm1d(hidden_dim),
                 nn.ReLU(inplace=True),
                 nn.Linear(hidden_dim, hidden_dim, bias=True),
+                nn.BatchNorm1d(),
                 nn.ReLU(inplace=True),
+                nn.Dropout(p=0.2),
                 nn.Linear(hidden_dim, num_classes, bias=True),
             )
 
