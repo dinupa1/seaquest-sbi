@@ -45,7 +45,7 @@ class basic_net(nn.Module):
         out = self.feature_net(out)
         out = torch.cat((out, theta), dim=1)
         log_ratio = self.ratio_net(out)
-        logit = self.sigmoid()
+        logit = self.sigmoid(log_ratio)
         return log_ratio, logit
 
 
