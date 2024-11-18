@@ -55,18 +55,24 @@ train_tree = uproot.open("./data/outputs.root:train_tree")
 X_train = train_tree["X"].array().to_numpy()
 theta_train = train_tree["theta"].array().to_numpy()
 
+val_tree = uproot.open("./data/outputs.root:val_tree")
+X_val = val_tree["X"].array().to_numpy()
+theta_val = val_tree["theta"].array().to_numpy()
+
 test_tree = uproot.open("./data/outputs.root:test_tree")
 X_test = test_tree["X"].array().to_numpy()
 theta_test = test_tree["theta"].array().to_numpy()
 
-ds_ratio = ratio_dataset(X_train, theta_train)
-
-ds_train, ds_val = random_split(ds_ratio, [0.8, 0.2])
+ds_train = ratio_dataset(X_train, theta_train)
+ds_val = ratio_dataset(X_val, theta_val)
 
 train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False)
 
-model = basic_net().double().to(dvc)
+theta_mean = torch.tensor([0., 0., 0.]).double().to(dvc)
+theta_delta = torch.tensor([1.5, 0.6, 0.6]).double().to(dvc)
+model = basic_net(mean=theta_mean, std=theta_delta).double().to(dvc)
+
 optimizer = optim.Adam(model.parameters(), lr=0.0001, amsgrad=True)
 criterion = nn.BCELoss()
 

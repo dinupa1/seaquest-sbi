@@ -21,27 +21,49 @@ from sklearn.utils import resample
 
 
 class basic_net(nn.Module):
-    def __init__(self, input_dim:int = 12 * 12, theta_dim:int = 3, num_classes:int = 1):
+    def __init__(self, mean, std, input_dim:int = 12 * 12, theta_dim:int = 3, num_classes:int = 1):
         super(basic_net, self).__init__()
 
-        self.fc1 = nn.Linear(input_dim + theta_dim, 64, bias=True)
-        self.fc2 = nn.Linear(64, 64, bias=True)
-        self.fc3 = nn.Linear(64, 32, bias=True)
-        self.fc4 = nn.Linear(32, num_classes, bias=True)
+        self.fc1 = nn.Linear(input_dim + theta_dim, 256, bias=True)
+        self.bn1 = nn.BatchNorm1d(256)
+        self.fc2 = nn.Linear(256, 256, bias=True)
+        self.bn2 = nn.BatchNorm1d(256)
+        self.fc3 = nn.Linear(256, 128, bias=True)
+        self.bn3 = nn.BatchNorm1d(128)
+        self.fc4 = nn.Linear(128, num_classes, bias=True)
 
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
+        self.dropout = nn.Dropout(p=0.3)
         self.flatten = nn.Flatten()
 
+        self.mean = mean
+        self.std = std
+
     def forward(self, x, theta):
+
         x = self.flatten(x)
+        theta = (theta - self.mean)/self.std
         x = torch.cat((x, theta), dim=1)
-        x = self.relu(self.fc1(x))
-        x = self.relu(self.fc2(x))
-        x = self.relu(self.fc3(x))
-        log_ratio = self.fc4(x)
+
+        out = self.fc1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.fc2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+        out = self.dropout(out)
+
+        out = self.fc3(out)
+        out = self.bn3(out)
+        out = self.relu(out)
+
+        log_ratio = self.fc4(out)
         logit = self.sigmoid(log_ratio)
+
         return log_ratio, logit
+
 
 class basic_block(nn.Module):
     expansion = 1

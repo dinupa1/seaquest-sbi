@@ -41,8 +41,6 @@ void sim_reader::fill(double theta[3], std::unique_ptr<TH2D> &hist, std::unique_
         if(generator->Uniform(0., 1.) < threshold) continue;
         tree->GetEntry(ii);
         hist->Fill(phi, costh, cross_section(theta[0], theta[1], theta[2], true_phi, true_costh));
-        // hist_1->Fill(cos(phi), costh, cross_section(theta[0], theta[1], theta[2], true_phi, true_costh));
-        // hist_2->Fill(cos(2. * phi), costh, cross_section(theta[0], theta[1], theta[2], true_phi, true_costh));
         n_fill++;
     }
     if(n_fill < n_data){std::cout << "[ ===> filled with " << n_fill << " events ] " << std::endl;}
@@ -51,13 +49,12 @@ void sim_reader::fill(double theta[3], std::unique_ptr<TH2D> &hist, std::unique_
 
 simulator::simulator():generator(std::make_unique<TRandom3>(42)) {
 
-    std::cout << "[ ===> e906 messy MC ]" << std::endl;
-
     gSystem->Exec("python ./simulators/generator.py");
 
     TFile* inputs = TFile::Open("./data/generator.root", "read");
 
     train_reader = new sim_reader(inputs, "X_train");
+    val_reader = new sim_reader(inputs, "X_val");
     test_reader = new sim_reader(inputs, "X_test");
 
     outputs = new TFile("./data/outputs.root", "recreate");
@@ -65,6 +62,10 @@ simulator::simulator():generator(std::make_unique<TRandom3>(42)) {
     train_tree = new TTree("train_tree", "train_tree");
     train_tree->Branch("X", X, "X[1][12][12]/D");
     train_tree->Branch("theta", theta, "theta[3]/D");
+
+    val_tree = new TTree("val_tree", "val_tree");
+    val_tree->Branch("X", X, "X[1][12][12]/D");
+    val_tree->Branch("theta", theta, "theta[3]/D");
 
     test_tree = new TTree("test_tree", "test_tree");
     test_tree->Branch("X", X, "X[1][12][12]/D");
@@ -75,21 +76,17 @@ simulator::simulator():generator(std::make_unique<TRandom3>(42)) {
 void simulator::read(double X[1][12][12], std::unique_ptr<TH2D> &hist) {
 
     hist->Scale(1./hist->GetMaximum());
-    // hist_1->Scale(1./hist_1->GetMaximum());
-    // hist_2->Scale(1./hist_2->GetMaximum());
 
     for(int ii = 0; ii < 12; ii++) {
         for(int jj = 0; jj < 12; jj++) {
             X[0][ii][jj] = hist->GetBinContent(ii+1, jj+1);
-            // X[1][ii][jj] = hist_1->GetBinContent(ii+1, jj+1);
-            // X[2][ii][jj] = hist_2->GetBinContent(ii+1, jj+1);
             // std::cout << "[ ===> " << X[0][ii][jj] << " ]" << std::endl;
         }
     }
 }
 
 
-void simulator::samples(int n_train=1024000, int n_test=100) {
+void simulator::samples(int n_train, int n_val, int n_test) {
 
     std::cout << "[ ===> train events ]" << std::endl;
 
@@ -100,8 +97,6 @@ void simulator::samples(int n_train=1024000, int n_test=100) {
         theta[2] = generator->Uniform(-0.6, 0.6);
 
         std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.4, 0.4));
-        // std::unique_ptr<TH2D> hist_1(new TH2D("hist_1", "", 10, -1., 1., 10, -0.4, 0.4));
-        // std::unique_ptr<TH2D> hist_2(new TH2D("hist_2", "", 10, -1., 1., 10, -0.4, 0.4));
 
         // std::cout << "*****************" << std::endl;
 
@@ -109,7 +104,26 @@ void simulator::samples(int n_train=1024000, int n_test=100) {
         read(X, hist);
         train_tree->Fill();
 
-        if(ii%10000==0){std::cout << "[ ===> " << ii << " train events are done ]" << std::endl;}
+        if(ii%10240==0){std::cout << "[ ===> " << ii << " train events are done ]" << std::endl;}
+    }
+
+    std::cout << "[ ===> val events ]" << std::endl;
+
+    for(int ii = 0; ii < n_val; ii++) {
+
+        theta[0] = generator->Uniform(-1., 1.);
+        theta[1] = generator->Uniform(-0.4, 0.4);
+        theta[2] = generator->Uniform(-0.4, 0.4);
+
+        std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.4, 0.4));
+
+        // std::cout << "*****************" << std::endl;
+
+        val_reader->fill(theta, hist, generator);
+        read(X, hist);
+        val_tree->Fill();
+
+        if(ii%10240==0){std::cout << "[ ===> " << ii << " val events are done ]" << std::endl;}
     }
 
     std::cout << "[ ===> test events ]" << std::endl;
@@ -121,8 +135,6 @@ void simulator::samples(int n_train=1024000, int n_test=100) {
         theta[2] = generator->Uniform(-0.4, 0.4);
 
         std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.4, 0.4));
-        // std::unique_ptr<TH2D> hist_1(new TH2D("hist_1", "", 10, -1., 1., 10, -0.4, 0.4));
-        // std::unique_ptr<TH2D> hist_2(new TH2D("hist_2", "", 10, -1., 1., 10, -0.4, 0.4));
 
         // std::cout << "*****************" << std::endl;
 
@@ -130,7 +142,7 @@ void simulator::samples(int n_train=1024000, int n_test=100) {
         read(X, hist);
         test_tree->Fill();
 
-        if(ii%10==0){std::cout << "[ ===> " << ii << " test events are done ]" << std::endl;}
+        if(ii%1024==0){std::cout << "[ ===> " << ii << " test events are done ]" << std::endl;}
     }
 }
 

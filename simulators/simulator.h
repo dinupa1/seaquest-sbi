@@ -37,6 +37,7 @@ public:
 
 class simulator {
     sim_reader* train_reader;
+    sim_reader* val_reader;
     sim_reader* test_reader;
     std::unique_ptr<TRandom3> generator;
 public:
@@ -44,11 +45,12 @@ public:
     double theta[3];
     TFile* outputs;
     TTree* train_tree;
+    TTree* val_tree;
     TTree* test_tree;
     simulator();
     virtual ~simulator(){;}
     void read(double X[1][12][12], std::unique_ptr<TH2D> &hist);
-    void samples(int n_train, int n_test);
+    void samples(int n_train, int n_val, int n_test);
     void save();
 };
 
