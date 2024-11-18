@@ -19,7 +19,8 @@ from sklearn.metrics import roc_auc_score, roc_curve, auc
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
-from sbi import resnet_18
+from sbi import resnet_12x12
+from sbi import basic_net
 from sbi import ratio_dataset
 from sbi import ratio_trainner
 from sbi import test_ratio_model
@@ -42,7 +43,7 @@ torch.cuda.manual_seed(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-batch_size: int = 256
+batch_size: int = 1024
 
 
 #
@@ -65,8 +66,8 @@ ds_train, ds_val = random_split(ds_ratio, [0.8, 0.2])
 train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False)
 
-model = resnet_18().double().to(dvc)
-optimizer = optim.Adam(model.parameters(), lr=0.001, amsgrad=True)
+model = basic_net().double().to(dvc)
+optimizer = optim.Adam(model.parameters(), lr=0.0001, amsgrad=True)
 criterion = nn.BCELoss()
 
 tr = ratio_trainner(train_loader, val_loader, model, criterion, optimizer, device=dvc)

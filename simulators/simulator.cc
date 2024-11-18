@@ -63,23 +63,23 @@ simulator::simulator():generator(std::make_unique<TRandom3>(42)) {
     outputs = new TFile("./data/outputs.root", "recreate");
 
     train_tree = new TTree("train_tree", "train_tree");
-    train_tree->Branch("X", X, "X[1][32][32]/D");
+    train_tree->Branch("X", X, "X[1][12][12]/D");
     train_tree->Branch("theta", theta, "theta[3]/D");
 
     test_tree = new TTree("test_tree", "test_tree");
-    test_tree->Branch("X", X, "X[1][32][32]/D");
+    test_tree->Branch("X", X, "X[1][12][12]/D");
     test_tree->Branch("theta", theta, "theta[3]/D");
 }
 
 
-void simulator::read(double X[1][32][32], std::unique_ptr<TH2D> &hist) {
+void simulator::read(double X[1][12][12], std::unique_ptr<TH2D> &hist) {
 
     hist->Scale(1./hist->GetMaximum());
     // hist_1->Scale(1./hist_1->GetMaximum());
     // hist_2->Scale(1./hist_2->GetMaximum());
 
-    for(int ii = 0; ii < 32; ii++) {
-        for(int jj = 0; jj < 32; jj++) {
+    for(int ii = 0; ii < 12; ii++) {
+        for(int jj = 0; jj < 12; jj++) {
             X[0][ii][jj] = hist->GetBinContent(ii+1, jj+1);
             // X[1][ii][jj] = hist_1->GetBinContent(ii+1, jj+1);
             // X[2][ii][jj] = hist_2->GetBinContent(ii+1, jj+1);
@@ -99,7 +99,7 @@ void simulator::samples(int n_train=1024000, int n_test=100) {
         theta[1] = generator->Uniform(-0.6, 0.6);
         theta[2] = generator->Uniform(-0.6, 0.6);
 
-        std::unique_ptr<TH2D> hist(new TH2D("hist", "", 32, -pi, pi, 32, -0.4, 0.4));
+        std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.4, 0.4));
         // std::unique_ptr<TH2D> hist_1(new TH2D("hist_1", "", 10, -1., 1., 10, -0.4, 0.4));
         // std::unique_ptr<TH2D> hist_2(new TH2D("hist_2", "", 10, -1., 1., 10, -0.4, 0.4));
 
@@ -120,7 +120,7 @@ void simulator::samples(int n_train=1024000, int n_test=100) {
         theta[1] = generator->Uniform(-0.4, 0.4);
         theta[2] = generator->Uniform(-0.4, 0.4);
 
-        std::unique_ptr<TH2D> hist(new TH2D("hist", "", 32, -pi, pi, 32, -0.4, 0.4));
+        std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.4, 0.4));
         // std::unique_ptr<TH2D> hist_1(new TH2D("hist_1", "", 10, -1., 1., 10, -0.4, 0.4));
         // std::unique_ptr<TH2D> hist_2(new TH2D("hist_2", "", 10, -1., 1., 10, -0.4, 0.4));
 
