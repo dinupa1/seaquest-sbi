@@ -20,7 +20,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
 from sbi import resnet_12x12
-from sbi import basic_net
+from sbi import basic_network
 from sbi import ratio_dataset
 from sbi import ratio_trainner
 from sbi import test_ratio_model
@@ -69,9 +69,7 @@ ds_val = ratio_dataset(X_val, theta_val)
 train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False)
 
-theta_mean = torch.tensor([0., 0., 0.]).double().to(dvc)
-theta_delta = torch.tensor([1.5, 0.6, 0.6]).double().to(dvc)
-model = basic_net(mean=theta_mean, std=theta_delta).double().to(dvc)
+model = basic_network().double().to(dvc)
 
 optimizer = optim.Adam(model.parameters(), lr=0.0001, amsgrad=True)
 criterion = nn.BCELoss()

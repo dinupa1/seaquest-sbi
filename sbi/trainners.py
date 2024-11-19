@@ -20,12 +20,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
 
-def roc_auc(inputs, targets, weight=None):
-    fpr, tpr, _ = roc_curve(targets, inputs, sample_weight=weight)
-    tpr, fpr = np.array(list(zip(*sorted(zip(tpr, fpr)))))
-    return 1 - auc(tpr, fpr)
-
-
 class ratio_trainner:
     def __init__(self, train_dataloader, val_dataloader, ratio_model, criterion, optimizer, max_epoch=1000, patience=10, device=None):
         self.train_dataloader = train_dataloader
@@ -114,8 +108,8 @@ class ratio_trainner:
                 loss_a = self.criterion(logit_dep_a, ones) + self.criterion(logit_ind_a, zeros)
                 loss_b = self.criterion(logit_dep_b, ones) + self.criterion(logit_ind_b, zeros)
 
-                auc_a = roc_auc(torch.cat([logit_dep_a, logit_ind_a]).cpu().numpy().reshape(-1), torch.cat([ones, zeros]).cpu().numpy().reshape(-1))
-                auc_b = roc_auc(torch.cat([logit_dep_b, logit_ind_b]).cpu().numpy().reshape(-1), torch.cat([ones, zeros]).cpu().numpy().reshape(-1))
+                auc_a = roc_auc_score(torch.cat([ones, zeros]).cpu().numpy().reshape(-1), torch.cat([logit_dep_a, logit_ind_a]).cpu().numpy().reshape(-1))
+                auc_b = roc_auc_score(torch.cat([ones, zeros]).cpu().numpy().reshape(-1), torch.cat([logit_dep_b, logit_ind_b]).cpu().numpy().reshape(-1))
 
                 loss += loss_a + loss_b
                 auc += auc_a + auc_b

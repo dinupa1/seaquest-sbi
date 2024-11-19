@@ -150,6 +150,7 @@ void simulator::samples(int n_train, int n_val, int n_test) {
 void simulator::save() {
 
     train_tree->Write();
+    val_tree->Write();
     test_tree->Write();
 
     outputs->Close();
