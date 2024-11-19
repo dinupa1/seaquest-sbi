@@ -20,63 +20,37 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
 
-class linear_with_batchnorm(nn.Module):
-    def __init__(self, input_dim:int, output_dim:int):
-        super(linear_with_batchnorm, self).__init__()
+def linear_layers(input_dim:int, output_dim:int, batchnorm:bool, sigmoid:bool, dropout:float):
 
-        self.fc = nn.Linear(input_dim, output_dim, bias=True)
-        self.bn = nn.BatchNorm1d(output_dim)
-        self.relu = nn.ReLU()
+    layers = nn.Sequential()
 
-    def forward(self, x):
-        out = self.fc(x)
-        out = self.bn(out)
-        out = self.relu(out)
-        return out
+    layers.add_module("linear", nn.Linear(input_dim, output_dim, bias=True))
+    if batchnorm:
+        layers.add_module("batchnorm", nn.BatchNorm1d(output_dim))
+    if sigmoid:
+        layers.add_module("sigmoid", nn.Sigmoid())
+    else:
+        layers.add_module("relu", nn.ReLU())
+    if dropout > 0.:
+        layers.add_module("dropout", nn.Dropout(p=dropout))
 
-
-class linear_with_relu(nn.Module):
-    def __init__(self, input_dim:int, output_dim:int):
-        super(linear_with_relu, self).__init__()
-
-        self.fc = nn.Linear(input_dim, output_dim, bias=True)
-        self.relu = nn.ReLU()
-
-    def forward(self, x):
-        out = self.fc(x)
-        out = self.relu(out)
-        return out
-
-
-class linear_with_dropout(nn.Module):
-    def __init__(self, input_dim:int, output_dim:int, probs:float):
-        super(linear_with_dropout, self).__init__()
-
-        self.fc = nn.Linear(input_dim, output_dim, bias=True)
-        self.bn = nn.BatchNorm1d(output_dim)
-        self.dropout = nn.Dropout(p=probs)
-        self.relu = nn.ReLU()
-
-    def forward(self, x):
-        out = self.fc(x)
-        out = self.bn(out)
-        out = self.relu(out)
-        out = self.dropout(out)
-        return out
+    return layers
 
 
 class basic_network(nn.Module):
     def __init__(self, input_dim:int = 12 * 12, theta_dim:int = 3, num_classes:int = 1):
         super(basic_network, self).__init__()
 
-        self.layer1 = linear_with_batchnorm(input_dim, 128)
-        self.layer2 = linear_with_batchnorm(128, 64)
-        self.layer3 = linear_with_batchnorm(64, 32)
-        self.layer4 = linear_with_batchnorm(32, 16)
+        self.layer1 = linear_layers(input_dim, 128, batchnorm=True, sigmoid=False, dropout=0.)
+        self.layer2 = linear_layers(128, 64, batchnorm=True, sigmoid=False, dropout=0.)
+        self.layer3 = linear_layers(64, 32, batchnorm=True, sigmoid=False, dropout=0.)
+        self.layer4 = linear_layers(32, 16, batchnorm=True, sigmoid=False, dropout=0.)
 
-        self.layer5 = linear_with_relu(16 + theta_sim, 128)
+        self.layer5 = linear_layers(16 + theta_dim, 32, batchnorm=False, sigmoid=False, dropout=0.)
+        self.layer6 = linear_layers(32, 32, batchnorm=False, sigmoid=False, dropout=0.)
+        self.layer7 = linear_layers(32, 32, batchnorm=False, sigmoid=False, dropout=0.)
 
-        self.fc = nn.Linear(128, num_classes, bias=True)
+        self.fc = nn.Linear(32, num_classes, bias=True)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x, theta):
@@ -88,6 +62,19 @@ class basic_network(nn.Module):
 
         x = torch.cat((x, theta), dim=1)
         x = self.layer5(x)
+        x = self.layer6(x)
+        x = self.layer7(x)
+
         log_ratio = self.fc(x)
         logit = self.sigmoid(log_ratio)
         return log_ratio, logit
+
+
+
+# m = basic_network()
+# x = torch.randn(5, 1, 12, 12)
+# theta = torch.randn(5, 3)
+# print(m)
+# total_trainable_params = sum(p.numel() for p in m.parameters() if p.requires_grad)
+# print(f"total trainable params: {total_trainable_params}")
+# print(m(x, theta))
