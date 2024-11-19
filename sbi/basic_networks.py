@@ -1,4 +1,4 @@
-mport numpy as np
+import numpy as np
 import matplotlib.pyplot as plt
 
 import copy
@@ -74,7 +74,9 @@ class basic_network(nn.Module):
         self.layer3 = linear_with_batchnorm(64, 32)
         self.layer4 = linear_with_batchnorm(32, 16)
 
-        self.fc = nn.Linear(16 + theta_dim, num_classes, bias=True)
+        self.layer5 = linear_with_relu(16 + theta_sim, 128)
+
+        self.fc = nn.Linear(128, num_classes, bias=True)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x, theta):
@@ -85,6 +87,7 @@ class basic_network(nn.Module):
         x = self.layer4(x)
 
         x = torch.cat((x, theta), dim=1)
+        x = self.layer5(x)
         log_ratio = self.fc(x)
-        logit = self.sigmoid(x)
+        logit = self.sigmoid(log_ratio)
         return log_ratio, logit
