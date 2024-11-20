@@ -43,7 +43,7 @@ torch.cuda.manual_seed(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-batch_size: int = 10240
+batch_size: int = 1024
 
 #
 # inference model
@@ -92,7 +92,7 @@ trees = {
     }
 
 for i in range(len(theta_test)):
-    posterior = metropolis_hastings(model, X_test[i], num_samples=10000, proposal_std=0.1, device=dvc)
+    posterior = metropolis_hastings(model, X_test[i], num_samples=10000, proposal_std=0.001, device=dvc)
     tree["theta"].append(theta_test[i])
     tree["meas"].append(np.mean(posterior, axis=0))
     tree["error"].append(np.std(posterior, axis=0))

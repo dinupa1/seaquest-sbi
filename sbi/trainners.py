@@ -31,7 +31,7 @@ class ratio_trainner:
         self.patience = patience
         self.device = device
         
-        print("===================== ResNet_18 =====================")
+        print("===================== Ratio Network =====================")
         print(self.ratio_model)
         total_trainable_params = sum(p.numel() for p in self.ratio_model.parameters() if p.requires_grad)
         print(f"total trainable params: {total_trainable_params}")
@@ -56,19 +56,19 @@ class ratio_trainner:
         for batch in range(num_iterations):
 
             x_a, theta_a = next(loader)
-            x_a, theta_a = x_a.double().to(self.device), theta_a.double().to(self.device)
+            x_a, theta_a = x_a.double().to(self.device, non_blocking=True), theta_a.double().to(self.device, non_blocking=True)
 
             x_b, theta_b = next(loader)
-            x_b, theta_b = x_b.double().to(self.device), theta_b.double().to(self.device)
+            x_b, theta_b = x_b.double().to(self.device, non_blocking=True), theta_b.double().to(self.device, non_blocking=True)
 
             _, logit_dep_a = self.ratio_model(x_a, theta_a)
-            _, logit_ind_a = self.ratio_model(x_a, theta_b)
+            _, logit_ind_a = self.ratio_model(x_b, theta_a)
 
             _, logit_dep_b = self.ratio_model(x_b, theta_b)
-            _, logit_ind_b = self.ratio_model(x_b, theta_a)
+            _, logit_ind_b = self.ratio_model(x_a, theta_b)
 
-            ones = torch.ones([len(theta_a), 1]).double().to(self.device)
-            zeros = torch.zeros([len(theta_a), 1]).double().to(self.device)
+            ones = torch.ones([len(theta_a), 1]).double().to(self.device, non_blocking=True)
+            zeros = torch.zeros([len(theta_a), 1]).double().to(self.device, non_blocking=True)
 
 
             loss_a = self.criterion(logit_dep_a, ones) + self.criterion(logit_ind_a, zeros)
@@ -91,10 +91,10 @@ class ratio_trainner:
             for batch in range(num_iterations):
 
                 x_a, theta_a = next(loader)
-                x_a, theta_a = x_a.double().to(self.device), theta_a.double().to(self.device)
+                x_a, theta_a = x_a.double().to(self.device, non_blocking=True), theta_a.double().to(self.device, non_blocking=True)
 
                 x_b, theta_b = next(loader)
-                x_b, theta_b = x_b.double().to(self.device), theta_b.double().to(self.device)
+                x_b, theta_b = x_b.double().to(self.device, non_blocking=True), theta_b.double().to(self.device, non_blocking=True)
 
                 _, logit_dep_a = self.ratio_model(x_a, theta_a)
                 _, logit_ind_a = self.ratio_model(x_a, theta_b)
@@ -102,8 +102,8 @@ class ratio_trainner:
                 _, logit_dep_b = self.ratio_model(x_b, theta_b)
                 _, logit_ind_b = self.ratio_model(x_b, theta_a)
 
-                ones = torch.ones([len(theta_a), 1]).double().to(self.device)
-                zeros = torch.zeros([len(theta_a), 1]).double().to(self.device)
+                ones = torch.ones([len(theta_a), 1]).double().to(self.device, non_blocking=True)
+                zeros = torch.zeros([len(theta_a), 1]).double().to(self.device, non_blocking=True)
 
                 loss_a = self.criterion(logit_dep_a, ones) + self.criterion(logit_ind_a, zeros)
                 loss_b = self.criterion(logit_dep_b, ones) + self.criterion(logit_ind_b, zeros)

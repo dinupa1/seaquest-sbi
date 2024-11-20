@@ -20,19 +20,23 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
 
-def linear_layers(input_dim:int, output_dim:int, batchnorm:bool, sigmoid:bool, dropout:float):
+def layers_with_relu(input_dim:int, output_dim:int):
 
-    layers = nn.Sequential()
+    layers = nn.Sequential(
+            nn.Linear(input_dim, output_dim, bias=True),
+            nn.ReLU(),
+        )
 
-    layers.add_module("linear", nn.Linear(input_dim, output_dim, bias=True))
-    if batchnorm:
-        layers.add_module("batchnorm", nn.BatchNorm1d(output_dim))
-    if sigmoid:
-        layers.add_module("sigmoid", nn.Sigmoid())
-    else:
-        layers.add_module("relu", nn.ReLU())
-    if dropout > 0.:
-        layers.add_module("dropout", nn.Dropout(p=dropout))
+    return layers
+
+
+def layers_with_batchnorm(input_dim:int, output_dim:int):
+
+    layers = nn.Sequential(
+            nn.Linear(input_dim, output_dim, bias=True),
+            nn.BatchNorm1d(output_dim),
+            nn.ReLU(),
+        )
 
     return layers
 
@@ -41,30 +45,18 @@ class basic_network(nn.Module):
     def __init__(self, input_dim:int = 12 * 12, theta_dim:int = 3, num_classes:int = 1):
         super(basic_network, self).__init__()
 
-        self.layer1 = linear_layers(input_dim, 128, batchnorm=True, sigmoid=False, dropout=0.)
-        self.layer2 = linear_layers(128, 64, batchnorm=True, sigmoid=False, dropout=0.)
-        self.layer3 = linear_layers(64, 32, batchnorm=True, sigmoid=False, dropout=0.)
-        self.layer4 = linear_layers(32, 16, batchnorm=True, sigmoid=False, dropout=0.)
-
-        self.layer5 = linear_layers(16 + theta_dim, 32, batchnorm=False, sigmoid=False, dropout=0.)
-        self.layer6 = linear_layers(32, 32, batchnorm=False, sigmoid=False, dropout=0.)
-        self.layer7 = linear_layers(32, 32, batchnorm=False, sigmoid=False, dropout=0.)
-
-        self.fc = nn.Linear(32, num_classes, bias=True)
+        self.layer1 = layers_with_relu(input_dim + theta_dim, 128)
+        self.layer2 = layers_with_relu(128, 128)
+        self.layer3 = layers_with_relu(128, 128)
+        self.fc = nn.Linear(128, num_classes, bias=True)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x, theta):
         x = torch.flatten(x, 1)
+        x = torch.cat((x, theta), dim=1)
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
-        x = self.layer4(x)
-
-        x = torch.cat((x, theta), dim=1)
-        x = self.layer5(x)
-        x = self.layer6(x)
-        x = self.layer7(x)
-
         log_ratio = self.fc(x)
         logit = self.sigmoid(log_ratio)
         return log_ratio, logit
