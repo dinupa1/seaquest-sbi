@@ -20,7 +20,7 @@ double cross_section(double lambda, double mu, double nu, double phi, double cos
 sim_reader::sim_reader(TFile* infile, TString tname) {
     tree = (TTree*)infile->Get(tname.Data());
 
-    n_events = tree->GetEntries();
+    num_events = tree->GetEntries();
 
     tree->SetBranchAddress("pT", &pT);
     tree->SetBranchAddress("phi", &phi);
@@ -33,17 +33,11 @@ sim_reader::sim_reader(TFile* infile, TString tname) {
 
 void sim_reader::fill(double theta[3], std::unique_ptr<TH2D> &hist, std::unique_ptr<TRandom3> &generator) {
 
-    int n_fill = 0;
-    double threshold = generator->Uniform(0., 0.5);
-
-    for(int ii = 0; ii < n_events; ii++) {
-        if(n_fill == n_data) break;
-        if(generator->Uniform(0., 1.) < threshold) continue;
-        tree->GetEntry(ii);
+    for(int ii = 0; ii < num_data; ii++) {
+        int event = generator->Integer(num_events);
+        tree->GetEntry(event);
         hist->Fill(phi, costh, cross_section(theta[0], theta[1], theta[2], true_phi, true_costh));
-        n_fill++;
     }
-    if(n_fill < n_data){std::cout << "[ ===> filled with " << n_fill << " events ] " << std::endl;}
 }
 
 
@@ -53,23 +47,13 @@ simulator::simulator():generator(std::make_unique<TRandom3>(42)) {
 
     TFile* inputs = TFile::Open("./data/generator.root", "read");
 
-    train_reader = new sim_reader(inputs, "X_train");
-    val_reader = new sim_reader(inputs, "X_val");
-    test_reader = new sim_reader(inputs, "X_test");
+    rdr = new sim_reader(inputs, "tree");
 
     outputs = new TFile("./data/outputs.root", "recreate");
 
-    train_tree = new TTree("train_tree", "train_tree");
-    train_tree->Branch("X", X, "X[1][12][12]/D");
-    train_tree->Branch("theta", theta, "theta[3]/D");
-
-    val_tree = new TTree("val_tree", "val_tree");
-    val_tree->Branch("X", X, "X[1][12][12]/D");
-    val_tree->Branch("theta", theta, "theta[3]/D");
-
-    test_tree = new TTree("test_tree", "test_tree");
-    test_tree->Branch("X", X, "X[1][12][12]/D");
-    test_tree->Branch("theta", theta, "theta[3]/D");
+    out_tree = new TTree("out_tree", "out_tree");
+    out_tree->Branch("X", X, "X[1][12][12]/D");
+    out_tree->Branch("theta", theta, "theta[3]/D");
 }
 
 
@@ -86,11 +70,9 @@ void simulator::read(double X[1][12][12], std::unique_ptr<TH2D> &hist) {
 }
 
 
-void simulator::samples(int n_train, int n_val, int n_test) {
+void simulator::samples(int num_samples) {
 
-    std::cout << "[ ===> train events ]" << std::endl;
-
-    for(int ii = 0; ii < n_train; ii++) {
+    for(int ii = 0; ii < num_samples; ii++) {
 
         theta[0] = generator->Uniform(-1.5, 1.5);
         theta[1] = generator->Uniform(-0.6, 0.6);
@@ -100,58 +82,18 @@ void simulator::samples(int n_train, int n_val, int n_test) {
 
         // std::cout << "*****************" << std::endl;
 
-        train_reader->fill(theta, hist, generator);
+        rdr->fill(theta, hist, generator);
         read(X, hist);
-        train_tree->Fill();
+        out_tree->Fill();
 
-        if(ii%10240==0){std::cout << "[ ===> " << ii << " train events are done ]" << std::endl;}
-    }
-
-    std::cout << "[ ===> val events ]" << std::endl;
-
-    for(int ii = 0; ii < n_val; ii++) {
-
-        theta[0] = generator->Uniform(-1., 1.);
-        theta[1] = generator->Uniform(-0.4, 0.4);
-        theta[2] = generator->Uniform(-0.4, 0.4);
-
-        std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.4, 0.4));
-
-        // std::cout << "*****************" << std::endl;
-
-        val_reader->fill(theta, hist, generator);
-        read(X, hist);
-        val_tree->Fill();
-
-        if(ii%10240==0){std::cout << "[ ===> " << ii << " val events are done ]" << std::endl;}
-    }
-
-    std::cout << "[ ===> test events ]" << std::endl;
-
-    for(int ii = 0; ii < n_test; ii++) {
-
-        theta[0] = generator->Uniform(-1., 1.);
-        theta[1] = generator->Uniform(-0.4, 0.4);
-        theta[2] = generator->Uniform(-0.4, 0.4);
-
-        std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.4, 0.4));
-
-        // std::cout << "*****************" << std::endl;
-
-        test_reader->fill(theta, hist, generator);
-        read(X, hist);
-        test_tree->Fill();
-
-        if(ii%1024==0){std::cout << "[ ===> " << ii << " test events are done ]" << std::endl;}
+        if(ii%10240==0){std::cout << "[ ===> " << ii << " samples are done ]" << std::endl;}
     }
 }
 
 
 void simulator::save() {
 
-    train_tree->Write();
-    val_tree->Write();
-    test_tree->Write();
-
+    outputs->cd();
+    out_tree->Write();
     outputs->Close();
 }

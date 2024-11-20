@@ -30,9 +30,6 @@ from sbi import metropolis_hastings
 from simulators import sim_reader
 from simulators import simulator
 
-from plots import plots_reader
-from plots import ratio_plots
-
 dvc = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {dvc} device")
 
@@ -50,17 +47,15 @@ batch_size: int = 1024
 #
 
 # train events
-train_tree = uproot.open("./data/outputs.root:train_tree")
-X_train = train_tree["X"].array().to_numpy()
-theta_train = train_tree["theta"].array().to_numpy()
+out_tree = uproot.open("./data/outputs.root:out_tree")
+X = out_tree["X"].array().to_numpy()
+theta = out_tree["theta"].array().to_numpy()
 
-val_tree = uproot.open("./data/outputs.root:val_tree")
-X_val = val_tree["X"].array().to_numpy()
-theta_val = val_tree["theta"].array().to_numpy()
+X_train_val, X_test, theta_train_val, theta_test = train_test_split(X, theta, test_size=0.1, shuffle=True)
+X_train, X_val, theta_train, theta_val = train_test_split(X_train_val, theta_train_val, test_size=0.2, shuffle=True)
 
-test_tree = uproot.open("./data/outputs.root:test_tree")
-X_test = test_tree["X"].array().to_numpy()
-theta_test = test_tree["theta"].array().to_numpy()
+X_test = X_test[(np.abs(theta_test[:, 0]) < 1.) & (np.abs(theta_test[:, 1]) < 0.4) & (np.abs(theta_test[:, 2]) < 0.4)]
+theta_test = theta_test[(np.abs(theta_test[:, 0]) < 1.) & (np.abs(theta_test[:, 1]) < 0.4) & (np.abs(theta_test[:, 2]) < 0.4)]
 
 ds_train = ratio_dataset(X_train, theta_train)
 ds_val = ratio_dataset(X_val, theta_val)
@@ -91,7 +86,7 @@ trees = {
         "posterior": [],
     }
 
-for i in range(len(theta_test)):
+for i in range(100):
     posterior = metropolis_hastings(model, X_test[i], num_samples=10000, proposal_std=0.001, device=dvc)
     tree["theta"].append(theta_test[i])
     tree["meas"].append(np.mean(posterior, axis=0))
