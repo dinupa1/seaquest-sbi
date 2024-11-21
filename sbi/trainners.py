@@ -148,21 +148,34 @@ class ratio_trainner:
                 self.ratio_model.load_state_dict(self.best_state)
                 break
 
-def test_ratio_model(ratio_model, X_test, theta_test, batch_size=5000, device=None):
 
-    test_ds = TensorDataset(torch.from_numpy(X_test), torch.from_numpy(theta_test))
-    dataloader = DataLoader(test_ds, batch_size=batch_size, shuffle=False)
+def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.01, device=None):
+    chain = []
 
-    log_rs = None
+    theta_current = torch.tensor([0., 0., 0.]).double().to(device)
+    X_tensor = torch.from_numpy(X).double().to(device)
 
     ratio_model.eval()
     with torch.no_grad():
-        for batch, (X, theta) in enumerate(dataloader):
-            X, theta = X.double().to(device), theta.double().to(device)
+        for _ in range(num_samples):
 
-            log_r, logit = ratio_model(X, theta)
-            log_rs = torch.cat([log_rs, log_r]) if log_rs is not None else log_r
+            theta_proposal = np.random.multivariate_normal(theta_current.cpu().numpy(), proposal_std * np.eye(3))
 
-    log_rs = log_rs.cpu().detach().numpy()
+            theta_proposal = torch.from_numpy(theta_proposal).double().to(device)
 
-    return np.exp(log_rs)
+            if (theta_proposal[0] < -1.5 or 1.5 < theta_proposal[0] or theta_proposal[1] < -0.6 or 0.6 < theta_proposal[1] or theta_proposal[2] < -0.6 or 0.6 < theta_proposal[2]):
+                chain.append(theta_current.cpu().numpy())
+                continue
+
+            log_r_current, _ = ratio_model(X_tensor.unsqueeze(0), theta_current.unsqueeze(0))
+            log_r_proposal, _ = ratio_model(X_tensor.unsqueeze(0), theta_proposal.unsqueeze(0))
+
+            threshold = np.random.uniform(0., 1.)
+
+            if threshold <= min(1, torch.exp(log_r_proposal - log_r_current).item()):
+                theta_current = theta_proposal
+
+
+            chain.append(theta_current.cpu().numpy())
+
+    return np.array(chain)
