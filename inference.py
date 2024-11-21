@@ -23,8 +23,6 @@ from sbi import resnet_12x12
 from sbi import basic_network
 from sbi import ratio_dataset
 from sbi import ratio_trainner
-from sbi import test_ratio_model
-from sbi import mean_and_error
 from sbi import metropolis_hastings
 
 from simulators import sim_reader
