@@ -6,7 +6,7 @@ Bayesian inference is a robust framework for parameter estimation and uncertaint
 
 ## Bayesian Inference
 
-For a given observation $x$and model (or theory) parameters $\vartheta$, the posterior $p(\vartheta | x)$ can be defined using Bayes’ theorem,
+For a given observation $x$ and model (or theory) parameters $\vartheta$, the posterior $p(\vartheta | x)$ can be defined using Bayes’ theorem,
 
 $$
 p(\vartheta | x) = \dfrac{p(x | \vartheta)}{p(x)} p(\vartheta)
