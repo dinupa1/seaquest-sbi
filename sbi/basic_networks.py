@@ -78,20 +78,22 @@ class inference_network(nn.Module):
     def __init__(self, theta_dim:int = 12, num_classes:int = 1):
         super(inference_network, self).__init__()
 
-        self.layer1 = conv_with_batchnorm(1, 8, 4, 2)
-        self.layer2 = conv_with_batchnorm(8, 16, 2, 2)
+        self.layer1 = conv_with_batchnorm(1, 16, 4, 2)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.layer3 = layers_with_relu(16+theta_dim, 128)
-        self.fc = nn.Linear(128, num_classes, bias=True)
+        self.layer2 = layers_with_relu(16+theta_dim, 64)
+        self.layer3 = layers_with_relu(64, 64)
+        self.layer4 = layers_with_relu(64, 64)
+        self.fc = nn.Linear(64, num_classes, bias=True)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x, theta):
         x = self.layer1(x)
-        x = self.layer2(x)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = torch.cat((x, theta), dim=1)
+        x = self.layer2(x)
         x = self.layer3(x)
+        x = self.layer4(x)
         log_ratio = self.fc(x)
         logit = self.sigmoid(log_ratio)
         return log_ratio, logit

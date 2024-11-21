@@ -31,16 +31,12 @@ sim_reader::sim_reader(TFile* infile, TString tname) {
 }
 
 
-void sim_reader::fill(double theta[12], std::unique_ptr<TH2D> &hist, std::unique_ptr<TRandom3> &generator) {
+void sim_reader::fill(double theta[3], std::unique_ptr<TH2D> &hist, std::unique_ptr<TRandom3> &generator) {
 
     for(int ii = 0; ii < num_data; ii++) {
         int event = generator->Integer(num_events);
         tree->GetEntry(event);
-        for(int jj = 0; jj < 4; jj++) {
-            if(pT_edges[jj] < true_pT && true_pT <=  pT_edges[jj+1]) {
-                hist->Fill(phi, costh, cross_section(theta[3 * jj + 0], theta[3 * jj + 1], theta[3 * jj + 2], true_phi, true_costh));
-            }
-        }
+        hist->Fill(phi, costh, cross_section(theta[0], theta[1], theta[2], true_phi, true_costh));
     }
 }
 
@@ -49,15 +45,15 @@ simulator::simulator():generator(std::make_unique<TRandom3>(42)) {
 
     gSystem->Exec("python ./simulators/generator.py");
 
-    TFile* inputs = TFile::Open("./data/generator.root", "read");
+    TFile* inputs = TFile::Open("./data/generator_pT_bin_0.root", "read");
 
     rdr = new sim_reader(inputs, "tree");
 
-    outputs = new TFile("./data/outputs.root", "recreate");
+    outputs = new TFile("./data/outputs_pT_bin_0.root", "recreate");
 
     out_tree = new TTree("out_tree", "out_tree");
     out_tree->Branch("X", X, "X[1][12][12]/D");
-    out_tree->Branch("theta", theta, "theta[12]/D");
+    out_tree->Branch("theta", theta, "theta[3]/D");
 }
 
 
@@ -77,11 +73,9 @@ void simulator::samples(int num_samples) {
 
     for(int ii = 0; ii < num_samples; ii++) {
 
-        for(int jj = 0; jj < 4; jj++) {
-            theta[3 * jj + 0] = generator->Uniform(-1.5, 1.5);
-            theta[3 * jj + 1] = generator->Uniform(-0.6, 0.6);
-            theta[3 * jj + 2] = generator->Uniform(-0.6, 0.6);
-        }
+        theta[0] = generator->Uniform(-1.5, 1.5);
+        theta[1] = generator->Uniform(-0.6, 0.6);
+        theta[2] = generator->Uniform(-0.6, 0.6);
 
         std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.4, 0.4));
 
@@ -89,7 +83,7 @@ void simulator::samples(int num_samples) {
         read(X, hist);
         out_tree->Fill();
 
-        if(ii%10240==0){std::cout << "[ ===> " << ii << " samples are done ]" << std::endl;}
+        if(ii%1024==0){std::cout << "[ ===> " << ii << " samples are done ]" << std::endl;}
     }
 }
 

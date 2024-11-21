@@ -12,7 +12,7 @@
 #include <iostream>
 
 double pi = TMath::Pi();
-int num_data = 10000;
+int num_data = 2500;
 
 double cross_section(double lambda, double mu, double nu, double phi, double costh);
 
@@ -30,7 +30,7 @@ class sim_reader {
 public:
     sim_reader(TFile* inputs, TString tname);
     virtual ~sim_reader(){};
-    void fill(double theta[12], std::unique_ptr<TH2D> &hist, std::unique_ptr<TRandom3> &generator);
+    void fill(double theta[3], std::unique_ptr<TH2D> &hist, std::unique_ptr<TRandom3> &generator);
 };
 
 
@@ -39,7 +39,7 @@ class simulator {
     std::unique_ptr<TRandom3> generator;
 public:
     double X[1][12][12];
-    double theta[12];
+    double theta[3];
     TFile* outputs;
     TTree* out_tree;
     simulator();

@@ -152,29 +152,18 @@ class ratio_trainner:
 def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.01, device=None):
     chain = []
 
-    theta_current = torch.zeros(12).double().to(device)
+    theta_current = torch.zeros(3).double().to(device)
     X_tensor = torch.from_numpy(X).double().to(device)
 
     ratio_model.eval()
     with torch.no_grad():
         for _ in range(num_samples):
 
-            theta_proposal = np.random.multivariate_normal(theta_current.cpu().numpy(), proposal_std * np.eye(12))
+            theta_proposal = np.random.multivariate_normal(theta_current.cpu().numpy(), proposal_std * np.eye(3))
 
             theta_proposal = torch.from_numpy(theta_proposal).double().to(device)
 
-            if (theta_proposal[0] < -1.5 or 1.5 < theta_proposal[0] or
-                theta_proposal[1] < -0.6 or 0.6 < theta_proposal[1] or
-                theta_proposal[2] < -0.6 or 0.6 < theta_proposal[2] or
-                theta_proposal[3] < -1.5 or 1.5 < theta_proposal[3] or
-                theta_proposal[4] < -0.6 or 0.6 < theta_proposal[4] or
-                theta_proposal[5] < -0.6 or 0.6 < theta_proposal[5] or
-                theta_proposal[6] < -1.5 or 1.5 < theta_proposal[6] or
-                theta_proposal[7] < -0.6 or 0.6 < theta_proposal[7] or
-                theta_proposal[8] < -0.6 or 0.6 < theta_proposal[8] or
-                theta_proposal[9] < -1.5 or 1.5 < theta_proposal[9] or
-                theta_proposal[10] < -0.6 or 0.6 < theta_proposal[10] or
-                theta_proposal[11] < -0.6 or 0.6 < theta_proposal[11]):
+            if (theta_proposal[0] < -1.5 or 1.5 < theta_proposal[0] or theta_proposal[1] < -0.6 or 0.6 < theta_proposal[1] or theta_proposal[2] < -0.6 or 0.6 < theta_proposal[2]):
                 chain.append(theta_current.cpu().numpy())
                 continue
 

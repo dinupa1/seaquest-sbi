@@ -46,7 +46,7 @@ batch_size: int = 1024
 #
 
 # train events
-out_tree = uproot.open("./data/outputs.root:out_tree")
+out_tree = uproot.open("./data/outputs_pT_bin_0.root:out_tree")
 X = out_tree["X"].array().to_numpy()
 theta = out_tree["theta"].array().to_numpy()
 
@@ -62,7 +62,7 @@ ds_val = ratio_dataset(X_val, theta_val)
 train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False)
 
-model = basic_network().double().to(dvc)
+model = inference_network().double().to(dvc)
 
 optimizer = optim.Adam(model.parameters(), lr=0.001, amsgrad=True)
 criterion = nn.BCELoss()
@@ -98,7 +98,7 @@ for i in range(50):
     print(f"[===> {i+1} tests are done]")
 
 
-outfile = uproot.recreate("./data/eval_pT.root", compression=uproot.ZLIB(4))
+outfile = uproot.recreate("./data/eval_pT_0.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
 outfile["trees"] = trees
 outfile.close()

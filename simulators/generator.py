@@ -16,10 +16,12 @@ save = uproot.open("./data/data.root:save")
 branches = ["mass", "pT", "xF", "phi", "costh", "true_mass", "true_pT", "true_xF", "true_phi", "true_costh", "occuD1"]
 events = save.arrays(branches)
 
-events1 = events[(events.mass > 4.5) & (events.mass < 9.) & (events.xF > 0.) & (events.xF < 1.) & (np.abs(events.costh) < 0.4) & (events.occuD1 < 300.)]
+pT_edges = np.array([0., 0.429, 0.670, 0.957, 2.500])
+
+events1 = events[(events.mass > 4.5) & (events.mass < 9.) & (events.xF > 0.) & (events.xF < 1.) & (np.abs(events.costh) < 0.4) & (events.occuD1 < 300.) & (pT_edges[0] < events.pT) & (events.pT <= pT_edges[1])]
 
 
-outputs = uproot.recreate("./data/generator.root", compression=uproot.ZLIB(4))
+outputs = uproot.recreate("./data/generator_pT_bin_0.root", compression=uproot.ZLIB(4))
 
 outputs["tree"] = {
     "mass": events1["mass"],
