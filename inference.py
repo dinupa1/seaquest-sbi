@@ -21,6 +21,7 @@ from sklearn.utils import resample
 
 from sbi import resnet_12x12
 from sbi import basic_network
+from sbi import inference_network
 from sbi import ratio_dataset
 from sbi import ratio_trainner
 from sbi import metropolis_hastings
@@ -63,7 +64,7 @@ val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False)
 
 model = basic_network().double().to(dvc)
 
-optimizer = optim.Adam(model.parameters(), lr=0.0001, amsgrad=True)
+optimizer = optim.Adam(model.parameters(), lr=0.001, amsgrad=True)
 criterion = nn.BCELoss()
 
 tr = ratio_trainner(train_loader, val_loader, model, criterion, optimizer, device=dvc)

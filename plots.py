@@ -137,7 +137,7 @@ for i in range(4):
     plt.xlabel(fr"$\frac{{\nu_{{true}} - \nu_{{meas}}}} {{\sigma_{{\nu}}}}$ [{pT_edges[i]} < $p_{{T}}^{{true}}$ <= {pT_edges[i + 1]}]")
     plt.legend(frameon=False)
     plt.tight_layout()
-    plt.savefig("./plots/nu_score_pT_bin_{i}.png")
+    plt.savefig(f"./plots/nu_score_pT_bin_{i}.png")
     plt.close("all")
 
     xbins = np.linspace(-1., 1., 31)
@@ -153,7 +153,7 @@ for i in range(4):
     plt.ylabel(r"$\frac{\lambda_{true} - \lambda_{meas}}{\sigma_{\lambda}}$")
     plt.legend(frameon=False)
     plt.tight_layout()
-    plt.savefig(f"./plots/lambda_true_score_bin_{i}.png")
+    plt.savefig(f"./plots/lambda_true_score_pT_bin_{i}.png")
     plt.close("all")
 
     xbins = np.linspace(-0.4, 0.4, 31)
@@ -167,7 +167,7 @@ for i in range(4):
     plt.ylabel(r"$\frac{\mu_{true} - \mu_{meas}}{\sigma_{\mu}}$")
     plt.legend(frameon=False)
     plt.tight_layout()
-    plt.savefig(f"./plots/mu_true_score_bin_{i}.png")
+    plt.savefig(f"./plots/mu_true_score_pT_bin_{i}.png")
     plt.close("all")
 
     plt.figure(figsize=(8., 8.))
@@ -179,7 +179,7 @@ for i in range(4):
     plt.ylabel(r"$\frac{\nu_{true} - \nu_{meas}}{\sigma_{\nu}}$")
     plt.legend(frameon=False)
     plt.tight_layout()
-    plt.savefig(f"./plots/nu_true_score_bin_{i}.png")
+    plt.savefig(f"./plots/nu_true_score_pT_bin_{i}.png")
     plt.close("all")
 
     plt.figure(figsize=(8., 8.))

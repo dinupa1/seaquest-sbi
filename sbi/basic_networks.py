@@ -41,14 +41,25 @@ def layers_with_batchnorm(input_dim:int, output_dim:int):
     return layers
 
 
+def conv_with_batchnorm(input_channels:int, output_channel:int, kernel:int, stride:int):
+
+    layers = nn.Sequential(
+            nn.Conv2d(input_channels, output_channel, kernel, stride, padding=1),
+            nn.BatchNorm2d(output_channel),
+            nn.ReLU(),
+        )
+
+    return layers
+
+
 class basic_network(nn.Module):
     def __init__(self, input_dim:int = 12 * 12, theta_dim:int = 12, num_classes:int = 1):
         super(basic_network, self).__init__()
 
-        self.layer1 = layers_with_relu(input_dim + theta_dim, 128)
-        self.layer2 = layers_with_relu(128, 128)
-        self.layer3 = layers_with_relu(128, 128)
-        self.fc = nn.Linear(128, num_classes, bias=True)
+        self.layer1 = layers_with_relu(input_dim + theta_dim, 64)
+        self.layer2 = layers_with_relu(64, 64)
+        self.layer3 = layers_with_relu(64, 64)
+        self.fc = nn.Linear(64, num_classes, bias=True)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x, theta):
@@ -63,9 +74,31 @@ class basic_network(nn.Module):
 
 
 
-# m = basic_network()
+class inference_network(nn.Module):
+    def __init__(self, theta_dim:int = 12, num_classes:int = 1):
+        super(inference_network, self).__init__()
+
+        self.layer1 = conv_with_batchnorm(1, 8, 4, 2)
+        self.layer2 = conv_with_batchnorm(8, 16, 2, 2)
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.layer3 = layers_with_relu(16+theta_dim, 128)
+        self.fc = nn.Linear(128, num_classes, bias=True)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x, theta):
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = torch.cat((x, theta), dim=1)
+        x = self.layer3(x)
+        log_ratio = self.fc(x)
+        logit = self.sigmoid(log_ratio)
+        return log_ratio, logit
+
+# m = inference_network()
 # x = torch.randn(5, 1, 12, 12)
-# theta = torch.randn(5, 3)
+# theta = torch.randn(5, 12)
 # print(m)
 # total_trainable_params = sum(p.numel() for p in m.parameters() if p.requires_grad)
 # print(f"total trainable params: {total_trainable_params}")
