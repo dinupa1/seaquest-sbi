@@ -42,7 +42,7 @@ def layers_with_batchnorm(input_dim:int, output_dim:int):
 
 
 class basic_network(nn.Module):
-    def __init__(self, input_dim:int = 12 * 12, theta_dim:int = 3, num_classes:int = 1):
+    def __init__(self, input_dim:int = 12 * 12, theta_dim:int = 12, num_classes:int = 1):
         super(basic_network, self).__init__()
 
         self.layer1 = layers_with_relu(input_dim + theta_dim, 128)
