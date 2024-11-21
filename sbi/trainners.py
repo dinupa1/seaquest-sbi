@@ -97,10 +97,10 @@ class ratio_trainner:
                 x_b, theta_b = x_b.double().to(self.device, non_blocking=True), theta_b.double().to(self.device, non_blocking=True)
 
                 _, logit_dep_a = self.ratio_model(x_a, theta_a)
-                _, logit_ind_a = self.ratio_model(x_a, theta_b)
+                _, logit_ind_a = self.ratio_model(x_b, theta_a)
 
                 _, logit_dep_b = self.ratio_model(x_b, theta_b)
-                _, logit_ind_b = self.ratio_model(x_b, theta_a)
+                _, logit_ind_b = self.ratio_model(x_a, theta_b)
 
                 ones = torch.ones([len(theta_a), 1]).double().to(self.device, non_blocking=True)
                 zeros = torch.zeros([len(theta_a), 1]).double().to(self.device, non_blocking=True)

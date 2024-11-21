@@ -3,6 +3,14 @@ import matplotlib.pyplot as plt
 
 import mplhep as hep
 
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import random_split
+from torch.utils.data import Dataset
+from torch.optim.lr_scheduler import StepLR
+
 import uproot
 import awkward as ak
 
@@ -32,7 +40,7 @@ for i in range(5):
     plt.savefig(f"./plots/lambda_{i}.png")
     plt.close("all")
 
-    bins = np.linspace(-0.8, 0.8, 31)
+    bins = np.linspace(-0.6, 0.6, 31)
 
     plt.figure(figsize=(8., 8.))
     plt.hist(posterior[i, :, 1], bins=bins, histtype="step", label=fr"$\mu_{{posterior}}$ = {mean[1]:.3f} +/- {error[1]:.3f}")
@@ -152,7 +160,7 @@ plt.savefig("./plots/mu_score.png")
 plt.close("all")
 
 plt.figure(figsize=(8., 8.))
-plt.hist(score[:, 2], bins=bins, histtype="step", label=f"$Mean = {score_mean[2]:.3f}, Std. Dev. {score_error[2]:.3f}")
+plt.hist(score[:, 2], bins=bins, histtype="step", label=f"Mean = {score_mean[2]:.3f}, Std. Dev. {score_error[2]:.3f}")
 plt.xlabel(r"$\frac{\nu_{true} - \nu_{meas}}{\sigma_{\nu}}$")
 plt.legend(frameon=False)
 plt.tight_layout()
@@ -235,4 +243,17 @@ plt.xlabel(r"$\nu$")
 plt.ylabel(r"$\sigma_{\nu}$")
 plt.tight_layout()
 plt.savefig("./plots/nu_true_error.png")
+plt.close("all")
+
+
+x = torch.linspace(-5., 5., 51)
+m = nn.ReLU()
+y = m(x)
+
+plt.figure(figsize=(8., 8.))
+plt.plot(x.numpy(), y.numpy())
+plt.xlabel(r"$x$")
+plt.ylabel("ReLU")
+plt.tight_layout()
+plt.savefig("./plots/relu.png")
 plt.close("all")

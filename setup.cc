@@ -4,6 +4,8 @@
 
 int setup() {
 
+    gSystem->mkdir("./plots/", 1);
+
     gSystem->ChangeDirectory("./simulators/");
     gSystem->CompileMacro("simulator.cc", "kfgO", "lib_simulator");
     gSystem->ChangeDirectory("../");
