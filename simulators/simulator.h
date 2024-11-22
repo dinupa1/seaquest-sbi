@@ -30,7 +30,7 @@ class sim_reader {
 public:
     sim_reader(TFile* inputs, TString tname);
     virtual ~sim_reader(){};
-    void fill(double theta[9], std::unique_ptr<TH2D> &hist, std::unique_ptr<TRandom3> &generator);
+    void fill(double theta[9], std::unique_ptr<TH3D> &hist, std::unique_ptr<TRandom3> &generator);
 };
 
 
@@ -38,13 +38,13 @@ class simulator {
     sim_reader* rdr;
     std::unique_ptr<TRandom3> generator;
 public:
-    double X[1][12][12];
+    double X[3][12][12];
     double theta[9];
     TFile* outputs;
     TTree* out_tree;
     simulator();
     virtual ~simulator(){;}
-    void read(double X[1][12][12], std::unique_ptr<TH2D> &hist);
+    void read(double X[3][12][12], std::unique_ptr<TH3D> &hist);
     void samples(int num_samples);
     void save();
 };

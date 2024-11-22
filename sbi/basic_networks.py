@@ -84,12 +84,15 @@ class inference_network(nn.Module):
     def __init__(self, theta_dim:int = 12, num_classes:int = 1):
         super(inference_network, self).__init__()
 
-        self.layer1 = conv_with_batchnorm(1, 16, 4, 2)
+        hidden_dim = 128
+        out_features = 32
+
+        self.layer1 = conv_with_batchnorm(1, out_features, 4, 2)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.layer2 = layers_with_relu(16+theta_dim, 64)
-        self.layer3 = layers_with_relu(64, 64)
-        self.layer4 = layers_with_relu(64, 64)
-        self.fc = nn.Linear(64, num_classes, bias=True)
+        self.layer2 = layers_with_relu(out_features+theta_dim, hidden_dim)
+        self.layer3 = layers_with_relu(hidden_dim, hidden_dim)
+        self.layer4 = layers_with_relu(hidden_dim, hidden_dim)
+        self.fc = nn.Linear(hidden_dim, num_classes, bias=True)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x, theta):
