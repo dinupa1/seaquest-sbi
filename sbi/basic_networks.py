@@ -53,13 +53,17 @@ def conv_with_batchnorm(input_channels:int, output_channel:int, kernel:int, stri
 
 
 class basic_network(nn.Module):
-    def __init__(self, input_dim:int = 12 * 12, theta_dim:int = 12, num_classes:int = 1):
+    def __init__(self, input_dim:int = 12 * 12, theta_dim:int = 9, num_classes:int = 1):
         super(basic_network, self).__init__()
 
-        self.layer1 = layers_with_relu(input_dim + theta_dim, 64)
-        self.layer2 = layers_with_relu(64, 64)
-        self.layer3 = layers_with_relu(64, 64)
-        self.fc = nn.Linear(64, num_classes, bias=True)
+        hidden_dim = 128
+
+        self.layer1 = layers_with_relu(input_dim + theta_dim, hidden_dim)
+        self.layer2 = layers_with_relu(hidden_dim, hidden_dim)
+        self.layer3 = layers_with_relu(hidden_dim, hidden_dim)
+        self.layer4 = layers_with_relu(hidden_dim, hidden_dim)
+        self.layer5 = layers_with_relu(hidden_dim, hidden_dim)
+        self.fc = nn.Linear(hidden_dim, num_classes, bias=True)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x, theta):
@@ -68,6 +72,8 @@ class basic_network(nn.Module):
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
+        x = self.layer4(x)
+        x = self.layer5(x)
         log_ratio = self.fc(x)
         logit = self.sigmoid(log_ratio)
         return log_ratio, logit
