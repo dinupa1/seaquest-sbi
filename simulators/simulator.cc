@@ -31,16 +31,20 @@ sim_reader::sim_reader(TFile* infile, TString tname) {
 }
 
 
-void sim_reader::fill(double theta[9], std::unique_ptr<TH3D> &hist, std::unique_ptr<TRandom3> &generator) {
+void sim_reader::fill(double theta[9], std::unique_ptr<TH2D> &hist_0, std::unique_ptr<TH2D> &hist_1, std::unique_ptr<TH2D> &hist_2, std::unique_ptr<TRandom3> &generator) {
 
     for(int ii = 0; ii < num_data; ii++) {
         int event = generator->Integer(num_events);
         tree->GetEntry(event);
+        double weight = 0.;
         for(int jj = 0; jj < 3; jj++) {
             if(pT_edges[jj] < true_pT && true_pT <= pT_edges[jj+1]) {
-                hist->Fill(pT, phi, costh, cross_section(theta[3 * jj + 0], theta[3 * jj + 1], theta[3 * jj + 2], true_phi, true_costh));
+                weight = cross_section(theta[jj], theta[3 + jj], theta[6 + jj], true_phi, true_costh);
             }
         }
+        hist_0->Fill(phi, costh, weight);
+        hist_1->Fill(pT, phi, weight);
+        hist_2->Fill(pT, costh, weight);
     }
 }
 
@@ -61,15 +65,17 @@ simulator::simulator():generator(std::make_unique<TRandom3>(42)) {
 }
 
 
-void simulator::read(double X[3][12][12], std::unique_ptr<TH3D> &hist) {
+void simulator::read(double X[3][12][12], std::unique_ptr<TH2D> &hist_0, std::unique_ptr<TH2D> &hist_1, std::unique_ptr<TH2D> &hist_2) {
 
-    hist->Scale(1./hist->GetMaximum());
+    hist_0->Scale(1./hist_0->GetMaximum());
+    hist_1->Scale(1./hist_1->GetMaximum());
+    hist_2->Scale(1./hist_2->GetMaximum());
 
-    for(int ii = 0; ii < 12; ii++) {
-        for(int jj = 0; jj < 12; jj++) {
-            X[0][ii][jj] = hist->GetBinContent(1, ii+1, jj+1);
-            X[1][ii][jj] = hist->GetBinContent(2, ii+1, jj+1);
-            X[2][ii][jj] = hist->GetBinContent(3, ii+1, jj+1);
+    for(int ii = 0; ii < num_bins; ii++) {
+        for(int jj = 0; jj < num_bins; jj++) {
+            X[0][ii][jj] = hist_0->GetBinContent(ii+1, jj+1);
+            X[1][ii][jj] = hist_1->GetBinContent(ii+1, jj+1);
+            X[2][ii][jj] = hist_2->GetBinContent(ii+1, jj+1);
         }
     }
 }
@@ -80,15 +86,17 @@ void simulator::samples(int num_samples) {
     for(int ii = 0; ii < num_samples; ii++) {
 
         for(int jj = 0; jj < 3; jj++) {
-            theta[3 * jj + 0] = generator->Uniform(-2., 2.);
-            theta[3 * jj + 1] = generator->Uniform(-0.8, 0.8);
-            theta[3 * jj + 2] = generator->Uniform(-0.8, 0.8);
+            theta[jj] = generator->Uniform(-1.5, 1.5);
+            theta[3 + jj] = generator->Uniform(-0.6, 0.6);
+            theta[6 + jj] = generator->Uniform(-0.6, 0.6);
         }
 
-        std::unique_ptr<TH3D> hist(new TH3D("hist", "", 3, 0., 2.5, 12, -pi, pi, 12, -0.4, 0.4));
+        std::unique_ptr<TH2D> hist_0(new TH2D("hist_0", "", num_bins, -pi, pi, num_bins, -0.4, 0.4));
+        std::unique_ptr<TH2D> hist_1(new TH2D("hist_1", "", num_bins, 0., 2.5, num_bins, -pi, pi));
+        std::unique_ptr<TH2D> hist_2(new TH2D("hist_2", "", num_bins, 0., 2.5, num_bins, -0.4, 0.4));
 
-        rdr->fill(theta, hist, generator);
-        read(X, hist);
+        rdr->fill(theta, hist_0, hist_1, hist_2, generator);
+        read(X, hist_0, hist_1, hist_2);
         out_tree->Fill();
 
         if(ii%1024==0){std::cout << "[ ===> " << ii << " samples are done ]" << std::endl;}

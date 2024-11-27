@@ -13,6 +13,7 @@
 
 double pi = TMath::Pi();
 int num_data = 10000;
+int num_bins = 12;
 
 double cross_section(double lambda, double mu, double nu, double phi, double costh);
 
@@ -30,7 +31,7 @@ class sim_reader {
 public:
     sim_reader(TFile* inputs, TString tname);
     virtual ~sim_reader(){};
-    void fill(double theta[9], std::unique_ptr<TH3D> &hist, std::unique_ptr<TRandom3> &generator);
+    void fill(double theta[9], std::unique_ptr<TH2D> &hist_0, std::unique_ptr<TH2D> &hist_1, std::unique_ptr<TH2D> &hist_2, std::unique_ptr<TRandom3> &generator);
 };
 
 
@@ -44,7 +45,7 @@ public:
     TTree* out_tree;
     simulator();
     virtual ~simulator(){;}
-    void read(double X[3][12][12], std::unique_ptr<TH3D> &hist);
+    void read(double X[3][12][12], std::unique_ptr<TH2D> &hist_0, std::unique_ptr<TH2D> &hist_1, std::unique_ptr<TH2D> &hist_2);
     void samples(int num_samples);
     void save();
 };

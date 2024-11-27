@@ -41,11 +41,11 @@ def layers_with_batchnorm(input_dim:int, output_dim:int):
     return layers
 
 
-def conv_with_batchnorm(input_channels:int, output_channel:int, kernel:int, stride:int):
+def conv_with_dropout(input_channels:int, output_channel:int, kernel:int, stride:int):
 
     layers = nn.Sequential(
             nn.Conv2d(input_channels, output_channel, kernel, stride, padding=1),
-            nn.BatchNorm2d(output_channel),
+            nn.Dropout2d(p=0.3),
             nn.ReLU(),
         )
 
@@ -81,13 +81,13 @@ class basic_network(nn.Module):
 
 
 class inference_network(nn.Module):
-    def __init__(self, theta_dim:int = 12, num_classes:int = 1):
+    def __init__(self, theta_dim:int = 9, num_classes:int = 1):
         super(inference_network, self).__init__()
 
         hidden_dim = 128
         out_features = 32
 
-        self.layer1 = conv_with_batchnorm(1, out_features, 4, 2)
+        self.layer1 = conv_with_dropout(1, out_features, 4, 2)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.layer2 = layers_with_relu(out_features+theta_dim, hidden_dim)
         self.layer3 = layers_with_relu(hidden_dim, hidden_dim)
