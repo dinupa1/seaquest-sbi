@@ -16,6 +16,12 @@ int main() {
 
     gSystem->Exec("python simulation.py");
 
+    /*
+    std::cout << "[ ===> inference ]" << std::endl;
+
+    gSystem->Exec("python inference.py");
+    */
+
     std::cout << "[ ===> uncertainty ]" << std::endl;
 
     gSystem->Exec("python uncertainty.py");
