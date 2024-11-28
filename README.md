@@ -28,7 +28,7 @@ These models are optimized for [Fermilab E-906/SeaQuest](https://www.phy.anl.gov
 ```
 source /cvmfs/sft.cern.ch/lcg/views/LCG_105_cuda/x86_64-el9-gcc11-opt/setup.sh
 
-root -b -q setup.root
+root -b -q setup.cc
 ```
 
 To run the forward simulation,
