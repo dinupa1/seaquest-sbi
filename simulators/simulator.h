@@ -6,17 +6,17 @@
 #include <TRandom3.h>
 #include <TH3D.h>
 #include <TH2D.h>
+#include <TF1.h>
+#include <TF2.h>
 #include <TMath.h>
 #include <TString.h>
 #include <TSystem.h>
 #include <iostream>
 
 double pi = TMath::Pi();
-int num_data = 10000;
+int num_data = 12000;
 
-double cross_section(double lambda, double mu, double nu, double phi, double costh);
-
-// void forward_simulation(int seed);
+// double cross_section(double lambda, double mu, double nu, double phi, double costh);
 
 
 class sim_reader {
@@ -28,6 +28,7 @@ class sim_reader {
     double true_costh;
     TTree* tree;
     int num_events;
+    TF2* cross_section;
 public:
     sim_reader(TFile* inputs, TString tname);
     virtual ~sim_reader(){};

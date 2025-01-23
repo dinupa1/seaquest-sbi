@@ -39,10 +39,13 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
 batch_size: int = 256
+num_resamples: int = 100
 
 #
 # inference model
 #
+
+tree = {"mean": [], "std_dev": [], "theta": []}
 
 # train events
 out_tree = uproot.open("./data/outputs.root:out_tree")
@@ -50,54 +53,37 @@ X = out_tree["X"].array().to_numpy()
 theta = out_tree["theta"].array().to_numpy()
 
 X_train_val, X_test, theta_train_val, theta_test = train_test_split(X, theta, test_size=0.1, shuffle=True)
-X_train, X_val, theta_train, theta_val = train_test_split(X_train_val, theta_train_val, test_size=0.2, shuffle=True)
 
 X_test = X_test[(np.abs(theta_test[:, 0]) < 1.) & (np.abs(theta_test[:, 1]) < 0.4) & (np.abs(theta_test[:, 2]) < 0.4)]
 theta_test = theta_test[(np.abs(theta_test[:, 0]) < 1.) & (np.abs(theta_test[:, 1]) < 0.4) & (np.abs(theta_test[:, 2]) < 0.4)]
 
-ds_train = ratio_dataset(X_train, theta_train)
-ds_val = ratio_dataset(X_val, theta_val)
+for i in range(num_resamples):
 
-train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True, num_workers=4)
-val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False, num_workers=4)
+    print(f"[====> Iteration {i+1}]")
 
-model = basic_network().double().to(dvc)
+    X_resample, theta_resample = resample(X_train_val, theta_train_val)
+    X_train, X_val, theta_train, theta_val = train_test_split(X_resample, theta_resample, test_size=0.2, shuffle=True)
 
-optimizer = optim.Adam(model.parameters(), lr=0.0001, amsgrad=True)
-criterion = nn.BCELoss()
+    ds_train = ratio_dataset(X_train, theta_train)
+    ds_val = ratio_dataset(X_val, theta_val)
 
-tr = ratio_trainner(train_loader, val_loader, model, criterion, optimizer, device=dvc)
-tr.fit()
+    train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True, num_workers=4)
+    val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False, num_workers=4)
 
-#
-# test data
-#
+    model = basic_network().double().to(dvc)
 
-tree = {
-        "theta": [],
-        "meas": [],
-        "error": [],
-    }
+    optimizer = optim.Adam(model.parameters(), lr=0.0001, amsgrad=True)
+    criterion = nn.BCELoss()
 
-trees = {
-        "theta": [],
-        "posterior": [],
-    }
+    tr = ratio_trainner(train_loader, val_loader, model, criterion, optimizer, device=dvc)
+    tr.fit()
 
-for i in range(100):
-    posterior = metropolis_hastings(model, X_test[i], num_samples=10000, proposal_std=0.001, device=dvc)
-    tree["theta"].append(theta_test[i])
-    tree["meas"].append(np.mean(posterior, axis=0))
-    tree["error"].append(np.std(posterior, axis=0))
+    posterior = metropolis_hastings(model, X_test[2], num_samples=10000, proposal_std=0.001, device=dvc)
 
-    if i < 5:
-        trees["theta"].append(theta_test[i])
-        trees["posterior"].append(posterior)
+    tree["mean"].append(np.mean(posterior, axis=0))
+    tree["std_dev"].append(np.std(posterior, axis=0))
+    tree["theta"].append(theta_test[0])
 
-    print(f"[===> {i+1} tests are done]")
-
-
-outfile = uproot.recreate("./data/eval.root", compression=uproot.ZLIB(4))
+outfile = uproot.recreate("./data/eval_uncertainty.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
-outfile["trees"] = trees
 outfile.close()
