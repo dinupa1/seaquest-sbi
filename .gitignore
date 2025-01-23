@@ -5,3 +5,5 @@ __pycache__
 *.pcm
 *.png
 .ipynb_checkpoints/
+.idea/
+test.*
