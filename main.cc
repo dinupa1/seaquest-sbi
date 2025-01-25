@@ -2,7 +2,7 @@
 #include <iostream>
 
 int main() {
-    std::cout << "[===> neural posterior estimation for extraction of DY angular parameters]" << std::endl;
+    std::cout << "[===> seaquest simulation based inference framework]" << std::endl;
 
     std::cout << "[===> build simulators]" << std::endl;
     gSystem->Exec("cd ./simulators/ && root -b -q setup.cc && cd ..");
