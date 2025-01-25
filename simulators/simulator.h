@@ -13,13 +13,12 @@
 #include <TSystem.h>
 #include <iostream>
 
+double cross_section(double lambda, double mu, double nu, double phi, double costh);
+
 double pi = TMath::Pi();
-int num_data = 12000;
+int num_data = 12730;
 
-// double cross_section(double lambda, double mu, double nu, double phi, double costh);
-
-
-class sim_reader {
+class reader {
     double pT;
     double phi;
     double costh;
@@ -28,16 +27,15 @@ class sim_reader {
     double true_costh;
     TTree* tree;
     int num_events;
-    TF2* cross_section;
 public:
-    sim_reader(TFile* inputs, TString tname);
-    virtual ~sim_reader(){};
+    reader(TFile* inputs, TString tname);
+    virtual ~reader(){};
     void fill(double theta[3], std::unique_ptr<TH2D> &hist, std::unique_ptr<TRandom3> &generator);
 };
 
 
 class simulator {
-    sim_reader* rdr;
+    reader* rdr;
     std::unique_ptr<TRandom3> generator;
 public:
     double X[1][12][12];
