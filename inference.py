@@ -90,7 +90,7 @@ for i in range(100):
     tree["meas"].append(np.mean(posterior, axis=0))
     tree["error"].append(np.std(posterior, axis=0))
 
-    if i < 5:
+    if i < 20:
         trees["theta"].append(theta_test[i])
         trees["posterior"].append(posterior)
 
