@@ -97,7 +97,7 @@ for i in range(100):
     print(f"[===> {i+1} tests are done]")
 
 
-outfile = uproot.recreate("./data/eval.root", compression=uproot.ZLIB(4))
+outfile = uproot.recreate("./data/posterior_LH2_messy_MC.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
 outfile["trees"] = trees
 outfile.close()

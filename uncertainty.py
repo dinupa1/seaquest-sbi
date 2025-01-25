@@ -82,8 +82,8 @@ for i in range(num_resamples):
 
     tree["mean"].append(np.mean(posterior, axis=0))
     tree["std_dev"].append(np.std(posterior, axis=0))
-    tree["theta"].append(theta_test[0])
+    tree["theta"].append(theta_test[2])
 
-outfile = uproot.recreate("./data/eval_uncertainty.root", compression=uproot.ZLIB(4))
+outfile = uproot.recreate("./data/systematics_LH2_messy_MC.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
 outfile.close()
