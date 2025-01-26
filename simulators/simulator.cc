@@ -33,7 +33,7 @@ reader::reader(TFile* infile, TString tname) {
 
 void reader::fill(double theta[3], std::unique_ptr<TH2D> &hist, std::unique_ptr<TRandom3> &generator) {
 
-    int i_start = generator->Integer(num_events/2);
+    int i_start = generator->Integer(num_events - num_data);
 
     for(int ii = i_start; ii < i_start+num_data; ii++) {
         tree->GetEntry(ii);
