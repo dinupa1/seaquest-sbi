@@ -35,7 +35,7 @@ void reader::fill(double theta[3], std::unique_ptr<TH2D> &hist, std::unique_ptr<
 
     int i_start = generator->Integer(num_events/2);
 
-    for(int ii = i_start; ii < i_start+num_events; ii++) {
+    for(int ii = i_start; ii < i_start+num_data; ii++) {
         tree->GetEntry(ii);
         hist->Fill(phi, costh, cross_section(theta[0], theta[1], theta[2], true_phi, true_costh));
     }
