@@ -28,8 +28,6 @@ void phi_costheta() {
     intree->SetBranchAddress("costh", &costh);
     intree->SetBranchAddress("weight", &weight);
 
-    TFile* outputs = new TFile("./data/RS67_LH2_hist.root", "recreate");
-
     TH2D* hist = new TH2D("hist", "", 12, -pi, pi, 12, -0.4, 0.4);
 
     for(int ii = 0; ii < num_events; ii++) {
@@ -39,6 +37,21 @@ void phi_costheta() {
 
     hist->Scale(1./hist->GetMaximum());
 
-    hist->Write();
+    TFile* outputs = new TFile("./data/RS67_LH2_hist.root", "recreate");
+    TTree* out_tree = new TTree("out_tree", "out_tree");
+
+    double X[1][12][12];
+
+    out_tree->Branch("X", X, "X[1][12][12]/D");
+
+    for(int ii = 0; ii < 12; ii++) {
+        for(int jj = 0; jj < 12; jj++) {
+            X[0][ii][jj] = hist->GetBinContent(ii+1, jj+1);
+        }
+    }
+
+    out_tree->Fill();
+
+    out_tree->Write();
     outputs->Close();
 }
