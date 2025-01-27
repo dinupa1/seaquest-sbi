@@ -22,15 +22,6 @@ trees = uproot.open("./data/posterior_LH2_messy_MC.root:trees")
 theta = trees["theta"].array().to_numpy()
 posterior = trees["posterior"].array().to_numpy()
 
-tree = uproot.open("./data/posterior_LH2_messy_MC.root:tree")
-theta = tree["theta"].array().to_numpy()
-meas = tree["meas"].array().to_numpy()
-error = tree["error"].array().to_numpy()
-
-systematics = uproot.open("./data/systematics_LH2_messy_MC.root:tree")
-means = systematics["mean"].array().to_numpy()
-theta_par = systematics["theta"].array().to_numpy()
-
 
 for i in range(20):
 
@@ -40,7 +31,7 @@ for i in range(20):
     bins = np.linspace(-1.5, 1.5, 31)
 
     plt.figure(figsize=(8., 8.))
-    hep.histplot(posterior[i, :, 0], bins=bins, histtype="step", label=fr"$\lambda_{{posterior}}$ = {mean[0]:.3f} +/- {error[0]:.3f}")
+    plt.hist(posterior[i, :, 0], bins=bins, histtype="step", label=fr"$\lambda_{{posterior}}$ = {mean[0]:.3f} +/- {error[0]:.3f}")
     plt.axvline(x=theta[i, 0], linestyle="--", color="r", label=fr"$\lambda_{{par}}$ = {theta[i, 0]:.3f}")
     plt.xlabel(r"$\lambda$")
     plt.ylabel(r"$p(\lambda|\phi, cos\theta)$")
@@ -52,7 +43,7 @@ for i in range(20):
     bins = np.linspace(-0.6, 0.6, 31)
 
     plt.figure(figsize=(8., 8.))
-    hep.histplot(posterior[i, :, 1], bins=bins, histtype="step", label=fr"$\mu_{{posterior}}$ = {mean[1]:.3f} +/- {error[1]:.3f}")
+    plt.hist(posterior[i, :, 1], bins=bins, histtype="step", label=fr"$\mu_{{posterior}}$ = {mean[1]:.3f} +/- {error[1]:.3f}")
     plt.axvline(x=theta[i, 1], linestyle="--", color="r", label=fr"$\mu_{{par}}$ = {theta[i, 1]:.3f}")
     plt.xlabel(r"$\mu$")
     plt.ylabel(r"$p(\mu|\phi, cos\theta)$")
@@ -62,7 +53,7 @@ for i in range(20):
     plt.close("all")
 
     plt.figure(figsize=(8., 8.))
-    hep.histplot(posterior[i, :, 2], bins=bins, histtype="step", label=fr"$\nu_{{posterior}}$ = {mean[2]:.3f} +/- {error[2]:.3f}")
+    plt.hist(posterior[i, :, 2], bins=bins, histtype="step", label=fr"$\nu_{{posterior}}$ = {mean[2]:.3f} +/- {error[2]:.3f}")
     plt.axvline(x=theta[i, 2], linestyle="--", color="r", label=fr"$\nu_{{par}}$ = {theta[i, 2]:.3f}")
     plt.xlabel(r"$\nu$")
     plt.ylabel(r"$p(\nu|\phi, cos\theta)$")
@@ -103,6 +94,12 @@ plt.savefig("./plots/nu_chain.png")
 plt.close("all")
 
 
+tree = uproot.open("./data/posterior_LH2_messy_MC.root:tree")
+theta = tree["theta"].array().to_numpy()
+meas = tree["meas"].array().to_numpy()
+error = tree["error"].array().to_numpy()
+
+
 xvals = np.linspace(-1., 1., 50)
 plt.figure(figsize=(8., 8.))
 plt.errorbar(theta[:, 0], meas[:, 0], yerr=error[:, 0], fmt="bo", capsize=1.)
@@ -138,7 +135,6 @@ plt.tight_layout()
 plt.savefig("./plots/nu.png")
 plt.close("all")
 
-
 score = (theta - meas)/error
 
 score_mean = np.mean(score, axis=0)
@@ -147,7 +143,7 @@ score_error = np.std(score, axis=0)
 bins = np.linspace(-5., 5., 31)
 
 plt.figure(figsize=(8., 8.))
-hep.histplot(score[:, 0], bins=bins, histtype="step", label=f"Mean = {score_mean[0]:.3f}, Std. Dev. = {score_error[0]:.3f}")
+plt.hist(score[:, 0], bins=bins, histtype="step", label=f"Mean = {score_mean[0]:.3f}, Std. Dev. = {score_error[0]:.3f}")
 plt.xlabel(r"$\frac{\lambda_{par} - \lambda_{meas}}{\sigma_{\lambda}}$")
 plt.legend(frameon=False)
 plt.tight_layout()
@@ -155,7 +151,7 @@ plt.savefig("./plots/lambda_score.png")
 plt.close("all")
 
 plt.figure(figsize=(8., 8.))
-hep.histplot(score[:, 1], bins=bins, histtype="step", label=f"Mean = {score_mean[1]:.3f}, Std Dev = {score_error[1]:.3f}")
+plt.hist(score[:, 1], bins=bins, histtype="step", label=f"Mean = {score_mean[1]:.3f}, Std Dev = {score_error[1]:.3f}")
 plt.xlabel(r"$\frac{\mu_{par} - \mu_{meas}}{\sigma_{\mu}}$")
 plt.legend(frameon=False)
 plt.tight_layout()
@@ -163,7 +159,7 @@ plt.savefig("./plots/mu_score.png")
 plt.close("all")
 
 plt.figure(figsize=(8., 8.))
-hep.histplot(score[:, 2], bins=bins, histtype="step", label=f"Mean = {score_mean[2]:.3f}, Std. Dev. {score_error[2]:.3f}")
+plt.hist(score[:, 2], bins=bins, histtype="step", label=f"Mean = {score_mean[2]:.3f}, Std. Dev. {score_error[2]:.3f}")
 plt.xlabel(r"$\frac{\nu_{par} - \nu_{meas}}{\sigma_{\nu}}$")
 plt.legend(frameon=False)
 plt.tight_layout()
@@ -248,14 +244,15 @@ plt.tight_layout()
 plt.savefig("./plots/nu_true_error.png")
 plt.close("all")
 
+systematics = uproot.open("./data/systematics_LH2_messy_MC.root:tree")
+means = systematics["mean"].array().to_numpy()
+theta_par = systematics["theta"].array().to_numpy()
 
 sigma_sys = np.std(means, axis=0)
-x_min = np.min(means, axis=0)
-x_max = np.max(means, axis=0)
 
-bins = np.linspace(x_min[0]+0.05, x_max[1]+0.05, 21)
+bins = np.linspace(-1.5, 0.5, 21)
 plt.figure(figsize=(8., 8.))
-hep.histplot(mean[:, 0], bins=bins, histtype="step", label=f"Std. Dev. = {sigma_sys[0]:.3f}")
+plt.hist(means[:, 0], bins=bins, histtype="step", label=f"Std. Dev. = {sigma_sys[0]:.3f}")
 plt.axvline(x=theta_par[0, 0], linestyle="--", color="r", label=fr"$\lambda_{{par}}$ = {theta_par[0, 0]:.3f}")
 plt.xlabel(r"$\lambda$")
 plt.ylabel("counts")
@@ -264,9 +261,9 @@ plt.tight_layout()
 plt.savefig("./plots/lambda_systematics_MC.png")
 plt.close("all")
 
-bins = np.linspace(x_min[1]+0.05, x_max[1]+0.05, 21)
+bins = np.linspace(0.2, 0.4, 21)
 plt.figure(figsize=(8., 8.))
-hep.histplot(mean[:, 1], bins=bins, histtype="step", label=f"Std. Dev. = {sigma_sys[1]:.3f}")
+plt.hist(means[:, 1], bins=bins, histtype="step", label=f"Std. Dev. = {sigma_sys[1]:.3f}")
 plt.axvline(x=theta_par[0, 1], linestyle="--", color="r", label=fr"$\mu_{{par}}$ = {theta_par[0, 1]:.3f}")
 plt.xlabel(r"$\mu$")
 plt.ylabel("counts")
@@ -275,9 +272,9 @@ plt.tight_layout()
 plt.savefig("./plots/mu_systematics_MC.png")
 plt.close("all")
 
-bins = np.linspace(x_min[0]+0.05, x_max + 0.05, 21)
+bins = np.linspace(0., 0.2, 21)
 plt.figure(figsize=(8., 8.))
-hep.histplot(mean[:, 2], bins=bins, histtype="step", label=f"Std. Dev. = {sigma_sys[2]:.3f}")
+plt.hist(means[:, 2], bins=bins, histtype="step", label=f"Std. Dev. = {sigma_sys[2]:.3f}")
 plt.axvline(x=theta_par[0, 2], linestyle="--", color="r", label=fr"$\nu_{{par}}$ = {theta_par[0, 2]:.3f}")
 plt.xlabel(r"$\nu$")
 plt.ylabel("counts")
