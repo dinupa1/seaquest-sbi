@@ -26,9 +26,6 @@ from sbi import ratio_dataset
 from sbi import ratio_trainner
 from sbi import metropolis_hastings
 
-from simulators import reader
-from simulators import simulator
-
 dvc = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {dvc} device")
 
