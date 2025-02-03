@@ -45,10 +45,10 @@ class basic_network(nn.Module):
     def __init__(self, input_dim:int = 12 * 12, theta_dim:int = 3, num_classes:int = 1):
         super(basic_network, self).__init__()
 
-        self.layer1 = layers_with_relu(input_dim + theta_dim, 128)
-        self.layer2 = layers_with_relu(128, 128)
-        self.layer3 = layers_with_relu(128, 128)
-        self.fc = nn.Linear(128, num_classes, bias=True)
+        self.layer1 = layers_with_relu(input_dim + theta_dim, 100)
+        self.layer2 = layers_with_relu(100, 100)
+        self.layer3 = layers_with_relu(100, 100)
+        self.fc = nn.Linear(100, num_classes, bias=True)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x, theta):
