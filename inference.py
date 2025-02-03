@@ -103,9 +103,9 @@ for i in range(100):
     if i < 20:
         trees["theta"].append(theta_test[i])
         trees["posterior"].append(posterior)
-        tree2["theta_50"].append(theta_50)
-        tree2["theta_16"].append(theta_16)
-        tree2["theta_83"].append(theta_83)
+        trees["theta_50"].append(theta_50)
+        trees["theta_16"].append(theta_16)
+        trees["theta_83"].append(theta_83)
 
     print(f"[===> {i+1} tests are done]")
 
