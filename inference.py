@@ -39,7 +39,7 @@ torch.backends.cudnn.benchmark = False
 batch_size: int = 10000
 proposal_std: float = 0.0005
 learning_rate: float = 0.0001
-num_samples: int = 2
+num_samples: int = 10000
 
 #
 # inference model

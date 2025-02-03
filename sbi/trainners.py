@@ -21,7 +21,7 @@ from sklearn.utils import resample
 
 
 class ratio_trainner:
-    def __init__(self, train_dataloader, val_dataloader, ratio_model, criterion, optimizer, max_epoch=2, patience=20, device=None):
+    def __init__(self, train_dataloader, val_dataloader, ratio_model, criterion, optimizer, max_epoch=100, patience=10, device=None):
         self.train_dataloader = train_dataloader
         self.val_dataloader = val_dataloader
         self.ratio_model = ratio_model
