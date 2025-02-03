@@ -125,16 +125,21 @@ outfile.close()
 RS67_LH2_tree = uproot.open("./data/RS67_LH2_hist.root:out_tree")
 X_RS67_LH2 = RS67_LH2_tree["X"].array().to_numpy()
 
+tree = {
+        "posterior": [],
+        "theta_50": [],
+        "theta_16": [],
+        "theta_83": [],
+    }
+
 posterior = metropolis_hastings(model, X_RS67_LH2[0], num_samples=num_samples, proposal_std=proposal_std, device=dvc)
 
 theta_16, theta_50, theta_83 = np.percentile(posterior, [16.5, 50.0, 83.5])
 
-tree = {
-    "posterior": posterior,
-    "theta_50": theta_50,
-    "theta_16": theta_16,
-    "theta_83": theta_83,
-    }
+tree["posterior"].append(posterior)
+tree["theta_50"].append(theta_50)
+tree["theta_16"].append(theta_16)
+tree["theta_83"].append(theta_83)
 
 outfile = uproot.recreate("./data/posterior_RS67_LH2_data.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
