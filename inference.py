@@ -85,7 +85,7 @@ tree = {
         "theta_83": [],
     }
 
-for i in range(100):
+for i in range(len(X_test)):
     posterior = metropolis_hastings(model, X_test[i], num_samples=num_samples, proposal_std=proposal_std, device=dvc)
     theta_16, theta_50, theta_83 = np.percentile(posterior, [16.5, 50.0, 83.5], axis=0)
 
@@ -94,6 +94,8 @@ for i in range(100):
     tree["theta_50"].append(theta_50)
     tree["theta_16"].append(theta_16)
     tree["theta_83"].append(theta_83)
+
+    print(f"[===> {i+1} samples are done ]")
 
 
 outfile = uproot.recreate("./data/posterior_LH2_messy_MC.root", compression=uproot.ZLIB(4))
@@ -107,6 +109,8 @@ outfile.close()
 #
 # inference RS67 LH2 data
 #
+print("[===> inference RS67 LH2 data]")
+
 RS67_LH2_tree = uproot.open("./data/RS67_LH2_hist.root:out_tree")
 X_RS67_LH2 = RS67_LH2_tree["X"].array().to_numpy()
 
