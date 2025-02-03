@@ -212,7 +212,7 @@ def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.005, d
 
             theta_proposal = torch.from_numpy(theta_proposal).double().to(device)
 
-            if (np.abs(theta_proposal[0]) < 1.0 or np.abs(theta_proposal[1]) < 0.5 or np.abs(theta_proposal[2]) < 0.5):
+            if (torch.abs(theta_proposal[0]) < 1.0 or torch.abs(theta_proposal[1]) < 0.5 or torch.abs(theta_proposal[2]) < 0.5):
                 chain.append(theta_current.cpu().numpy())
                 continue
 
