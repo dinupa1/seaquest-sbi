@@ -12,8 +12,10 @@ int main() {
     gSystem->Exec("python RS67_LH2_data.py");
     */
 
+    /*
     std::cout << "[===> create phi vs. costh histograms 12x12]" << std::endl;
     gSystem->Exec("root -b -q phi_costheta.cc");
+    */
 
     std::cout << "[===> generators]" << std::endl;
     gSystem->Exec("python ./simulators/generator.py");
@@ -21,6 +23,7 @@ int main() {
     std::cout << "[===> simulation]" << std::endl;
     gSystem->Exec("python simulations.py");
 
+    /*
     std::cout << "[===> inference]" << std::endl;
     gSystem->Exec("python inference.py");
 
@@ -32,6 +35,7 @@ int main() {
 
     std::cout << "[===> RS67 LH2 uncertainty]" << std::endl;
     gSystem->Exec("python uncertainty_RS67_LH2_data.py");
+    */
 
     return 0;
 }

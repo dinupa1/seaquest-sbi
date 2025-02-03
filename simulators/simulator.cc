@@ -35,10 +35,13 @@ void reader::fill(double theta[3], std::unique_ptr<TH2D> &hist, std::unique_ptr<
 
     int i_start = generator->Integer(num_events/2);
 
-    for(int ii = i_start; ii < i_start+num_data; ii++) {
+    for(int ii = i_start; ii < num_events; ii++) {
+        if(abs(hist->GetEffectiveEntries() - effective_entries) < 1.0) {break;}
         tree->GetEntry(ii);
         hist->Fill(phi, costh, cross_section(theta[0], theta[1], theta[2], true_phi, true_costh));
     }
+
+    if(abs(hist->GetEffectiveEntries() - effective_entries) > 1.0) {std::cout << "===> condition failed " << hist->GetEffectiveEntries() << std::endl;}
 }
 
 
@@ -72,9 +75,9 @@ void simulator::samples(int num_samples) {
 
     for(int ii = 0; ii < num_samples; ii++) {
 
-        theta[0] = generator->Uniform(-1.5, 1.5);
-        theta[1] = generator->Uniform(-0.6, 0.6);
-        theta[2] = generator->Uniform(-0.6, 0.6);
+        theta[0] = generator->Uniform(-1., 1.);
+        theta[1] = generator->Uniform(-0.5, 0.5);
+        theta[2] = generator->Uniform(-0.5, 0.5);
 
         std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.4, 0.4));
 
@@ -82,7 +85,7 @@ void simulator::samples(int num_samples) {
         read(X, hist);
         out_tree->Fill();
 
-        if(ii%10240==0){std::cout << "[===> " << ii << " samples are done ]" << std::endl;}
+        if(ii%10000==0){std::cout << "[===> " << ii << " samples are done ]" << std::endl;}
     }
 }
 

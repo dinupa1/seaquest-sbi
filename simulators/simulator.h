@@ -16,7 +16,7 @@
 double cross_section(double lambda, double mu, double nu, double phi, double costh);
 
 double pi = TMath::Pi();
-int num_data = 12730;
+double effective_entries = 4825.14;
 
 class reader {
     double pT;

@@ -20,12 +20,14 @@ void phi_costheta() {
     float phi;
     float costh;
     double weight;
+    Long64_t D1;
 
     intree->SetBranchAddress("mass", &mass);
     intree->SetBranchAddress("pT", &pT);
     intree->SetBranchAddress("xF", &xF);
     intree->SetBranchAddress("phi", &phi);
     intree->SetBranchAddress("costh", &costh);
+    intree->SetBranchAddress("D1", &D1);
     intree->SetBranchAddress("weight", &weight);
 
     TH2D* hist = new TH2D("hist", "", 12, -pi, pi, 12, -0.4, 0.4);
@@ -36,6 +38,9 @@ void phi_costheta() {
     }
 
     hist->Scale(1./hist->GetMaximum());
+
+    std::cout << hist->GetEffectiveEntries() << std::endl;
+    std::cout << hist->GetEntries() << std::endl;
 
     TFile* outputs = new TFile("./data/RS67_LH2_hist.root", "recreate");
     TTree* out_tree = new TTree("out_tree", "out_tree");

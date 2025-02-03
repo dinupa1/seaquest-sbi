@@ -21,7 +21,7 @@ from sklearn.utils import resample
 
 
 class ratio_trainner:
-    def __init__(self, train_dataloader, val_dataloader, ratio_model, criterion, optimizer, max_epoch=25, patience=10, device=None):
+    def __init__(self, train_dataloader, val_dataloader, ratio_model, criterion, optimizer, max_epoch=100, patience=20, device=None):
         self.train_dataloader = train_dataloader
         self.val_dataloader = val_dataloader
         self.ratio_model = ratio_model
@@ -114,10 +114,12 @@ class ratio_trainner:
                 loss += loss_a + loss_b
                 auc += auc_a + auc_b
 
-            return loss/num_iterations, auc/(2. * num_iterations)
+        return loss/num_iterations, auc/(2. * num_iterations)
             
     def fit(self, n_epoch=None):
         max_epoch = (self.epoch + n_epoch + 1) if n_epoch else self.max_epoch
+
+        fit_history ={"train_loss": [], "train_auc": [], "val_loss": [], "val_auc": []}
         
         for epoch in range(self.epoch + 1, max_epoch):
             self.epoch = epoch
@@ -127,9 +129,15 @@ class ratio_trainner:
             
             # evaluate loss for training set
             train_loss, train_auc = self.eval_step(self.train_dataloader)
+
+            fit_history["train_loss"].append(train_loss)
+            fit_history["train_auc"].append(train_auc)
             
             # evaluate loss for validation set
             val_loss, val_auc = self.eval_step(self.val_dataloader)
+
+            fit_history["val_loss"].append(val_loss)
+            fit_history["val_auc"].append(val_auc)
 
             print("\r" + " " * (50), end="")
             print("\r" + f"[Epoch {epoch:>3d}] [Train_loss: {train_loss:>5f} Train_auc: {train_auc:>5f}] [Val_loss: {val_loss:>5f} Val_auc: {val_auc:>5f}]")
@@ -148,8 +156,49 @@ class ratio_trainner:
                 self.ratio_model.load_state_dict(self.best_state)
                 break
 
+        self.ratio_model.load_state_dict(self.best_state)
 
-def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.01, device=None):
+        return fit_history
+
+    def prediction(self, data_loader):
+
+        num_iterations = len(data_loader)//2
+        loader = iter(data_loader)
+        self.ratio_model.eval()
+        labels, logits = None, None
+        with torch.no_grad():
+            for batch in range(num_iterations):
+
+                x_a, theta_a = next(loader)
+                x_a, theta_a = x_a.double().to(self.device, non_blocking=True), theta_a.double().to(self.device, non_blocking=True)
+
+                x_b, theta_b = next(loader)
+                x_b, theta_b = x_b.double().to(self.device, non_blocking=True), theta_b.double().to(self.device, non_blocking=True)
+
+                _, logit_dep_a = self.ratio_model(x_a, theta_a)
+                _, logit_ind_a = self.ratio_model(x_b, theta_a)
+
+                _, logit_dep_b = self.ratio_model(x_b, theta_b)
+                _, logit_ind_b = self.ratio_model(x_a, theta_b)
+
+                ones = torch.ones([len(theta_a), 1]).double().to(self.device, non_blocking=True)
+                zeros = torch.zeros([len(theta_a), 1]).double().to(self.device, non_blocking=True)
+
+                labels = torch.cat([labels, ones]) if labels is not None else ones
+                labels = torch.cat([labels, zeros]) if labels is not None else zeros
+                labels = torch.cat([labels, ones]) if labels is not None else ones
+                labels = torch.cat([labels, zeros]) if labels is not None else zeros
+
+                logits = torch.cat([logits, logit_dep_a]) if logits is not None else logit_dep_a
+                logits = torch.cat([logits, logit_ind_a]) if logits is not None else logit_ind_a
+                logits = torch.cat([logits, logit_dep_b]) if logits is not None else logit_dep_b
+                logits = torch.cat([logits, logit_ind_b]) if logits is not None else logit_ind_b
+
+        return labels.detach().cpu().numpy(), logits.detach().cpu().numpy()
+
+
+
+def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.005, device=None):
     chain = []
 
     theta_current = torch.tensor([0., 0., 0.]).double().to(device)
@@ -163,7 +212,7 @@ def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.01, de
 
             theta_proposal = torch.from_numpy(theta_proposal).double().to(device)
 
-            if (theta_proposal[0] < -1.5 or 1.5 < theta_proposal[0] or theta_proposal[1] < -0.6 or 0.6 < theta_proposal[1] or theta_proposal[2] < -0.6 or 0.6 < theta_proposal[2]):
+            if (np.abs(theta_proposal[0]) < 1.0 or np.abs(theta_proposal[1]) < 0.5 or np.abs(theta_proposal[2]) < 0.5):
                 chain.append(theta_current.cpu().numpy())
                 continue
 

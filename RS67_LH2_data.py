@@ -86,11 +86,11 @@ def e906_data_cuts(tree: uproot.models.TTree.Model_TTree_v19, beam_offset: float
             (events.D1 + events.D2 + events.D3 < 1000)
     )
 
-    kin_cut_2111_v42 = ((4.5 < events.mass) & (events.mass < 9.0) & (0. < events.xF) & (events.xF < 1.) & (np.abs(events.costh) < 0.4) & (events.D1 < 300) & (0.19 < events.pT) & (events.pT < 2.24)) 
+    kin_cut_2111_v42 = ((4.5 < events.mass) & (events.mass < 9.0) & (0. < events.xF) & (events.xF < 1.) & (np.abs(events.costh) < 0.4) & (events.D1 < 300) & (0.19 < events.pT) & (events.pT < 2.24))
 
     events_cut = events[occ_cut_2111_v42 & track1_cut_2111_v42 & track2_cut_2111_v42 & tracks_cut_2111_v42 & dimuon_cut_2111_v42 & kin_cut_2111_v42]
 
-    print("---> # of dimuons {}".format(len(events_cut)))
+    print("===> # of dimuons {}".format(len(events_cut)))
 
     return events_cut
 
@@ -103,7 +103,8 @@ tree = e906_data_cuts(result)
 tree_mix = e906_data_cuts(result_mix)
 tree_flask = e906_data_cuts(result_flask)
 
-weight = 1.57319e+17/3.57904e+16
+weight = (1.0 * 1.57319e+17)/(3.57904e+16)
+print(f"===> PoT weight {weight}")
 
 len1 = len(tree.mass.to_numpy())
 len2 = len(tree_mix.mass.to_numpy())
@@ -118,7 +119,7 @@ dics = {
     "phi": np.concatenate((tree.phi.to_numpy(), tree_mix.phi.to_numpy(), tree_flask.phi.to_numpy())),
     "costh": np.concatenate((tree.costh.to_numpy(), tree_mix.costh.to_numpy(), tree_flask.costh.to_numpy())),
     "D1": np.concatenate((tree.D1.to_numpy(), tree_mix.D1.to_numpy(), tree_flask.D1.to_numpy())),
-    "weight": np.concatenate((np.ones(len1), -1. * np.ones(len2), -weight * np.ones(len3))),
+    "weight": np.concatenate((np.ones(len1), -1.* np.ones(len2), -1.* weight* np.ones(len3))),
 }
 
 outfile = uproot.recreate("./data/RS67_LH2_data.root", compression=uproot.ZLIB(4))
