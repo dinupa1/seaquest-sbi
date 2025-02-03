@@ -79,40 +79,25 @@ labels, logits = tr.prediction(test_loader)
 #
 tree = {
         "theta": [],
-        "theta_50": [],
-        "theta_16": [],
-        "theta_83": [],
-    }
-
-trees = {
-        "theta": [],
         "posterior": [],
         "theta_50": [],
         "theta_16": [],
         "theta_83": [],
     }
 
-for i in range(100):
+for i in range(len(X_test)):
     posterior = metropolis_hastings(model, X_test[i], num_samples=num_samples, proposal_std=proposal_std, device=dvc)
     theta_16, theta_50, theta_83 = np.percentile(posterior, [16.5, 50.0, 83.5])
+
     tree["theta"].append(theta_test[i])
+    tree["posterior"].append(posterior)
     tree["theta_50"].append(theta_50)
     tree["theta_16"].append(theta_16)
     tree["theta_83"].append(theta_83)
 
-    if i < 20:
-        trees["theta"].append(theta_test[i])
-        trees["posterior"].append(posterior)
-        trees["theta_50"].append(theta_50)
-        trees["theta_16"].append(theta_16)
-        trees["theta_83"].append(theta_83)
-
-    print(f"[===> {i+1} tests are done]")
-
 
 outfile = uproot.recreate("./data/posterior_LH2_messy_MC.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
-outfile["trees"] = trees
 outfile["history"] = fit_history
 outfile["test_samples"] = {"labels": labels, "logits": logits}
 outfile.close()
