@@ -85,7 +85,7 @@ tree = {
         "theta_83": [],
     }
 
-for i in range(len(X_test)):
+for i in range(200):
     posterior = metropolis_hastings(model, X_test[i], num_samples=num_samples, proposal_std=proposal_std, device=dvc)
     theta_16, theta_50, theta_83 = np.percentile(posterior, [16.5, 50.0, 83.5], axis=0)
 
