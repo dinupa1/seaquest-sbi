@@ -16,7 +16,7 @@ save = uproot.open("../data/LH2_messy_MC_data.root:save")
 branches = ["mass", "pT", "xF", "phi", "costh", "true_mass", "true_pT", "true_xF", "true_phi", "true_costh", "occuD1"]
 events = save.arrays(branches)
 
-events1 = events[(events.mass > 4.5) & (events.mass < 9.) & (events.xF > 0.) & (events.xF < 1.) & (np.abs(events.costh) < 0.4) & (events.occuD1 < 300.) & (0.19 < events.pT) & (events.pT < 2.24)]
+events1 = events[(events.mass > 4.5) & (events.mass < 8.) & (events.xF > -0.1) & (events.xF < 0.9) & (np.abs(events.costh) < 0.4) & (events.occuD1 < 300.) & (0.19 < events.pT) & (events.pT < 2.24)]
 
 
 outputs = uproot.recreate("./data/generator.root", compression=uproot.ZLIB(4))
