@@ -34,7 +34,7 @@ void phi_costheta() {
 
     for(int ii = 0; ii < num_events; ii++) {
         intree->GetEntry(ii);
-        hist->Fill(phi, costh, weight);
+        if(4.5 < mass && mass < 9.0 && -0.1 < xF && xF < 0.9 && abs(costh) < 0.4 && D1 < 300. && 0.19 < pT && pT < 2.24){hist->Fill(phi, costh, weight);}
     }
 
     hist->Scale(1./hist->GetMaximum());

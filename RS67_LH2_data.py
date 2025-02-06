@@ -86,9 +86,9 @@ def e906_data_cuts(tree: uproot.models.TTree.Model_TTree_v19, beam_offset: float
             (events.D1 + events.D2 + events.D3 < 1000)
     )
 
-    kin_cut_2111_v42 = ((4.5 < events.mass) & (events.mass < 9.0) & (0. < events.xF) & (events.xF < 1.) & (np.abs(events.costh) < 0.4) & (events.D1 < 300) & (0.19 < events.pT) & (events.pT < 2.24))
+    # kin_cut_2111_v42 = ((4.5 < events.mass) & (events.mass < 9.0) & (-0.1 < events.xF) & (events.xF < 0.9) & (np.abs(events.costh) < 0.4) & (events.D1 < 300) & (0.19 < events.pT) & (events.pT < 2.24))
 
-    events_cut = events[occ_cut_2111_v42 & track1_cut_2111_v42 & track2_cut_2111_v42 & tracks_cut_2111_v42 & dimuon_cut_2111_v42 & kin_cut_2111_v42]
+    events_cut = events[occ_cut_2111_v42 & track1_cut_2111_v42 & track2_cut_2111_v42 & tracks_cut_2111_v42 & dimuon_cut_2111_v42]
 
     print("===> # of dimuons {}".format(len(events_cut)))
 
