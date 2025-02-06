@@ -118,6 +118,9 @@ tree = {
         "std": [],
     }
 
+X_test = X_test[(np.abs(theta_test[:, 0]) < 1.) & (np.abs(theta_test[:, 1]) < 0.5) & (np.abs(theta_test[:, 2]) < 0.5) ]
+theta_test = theta_test[(np.abs(theta_test[:, 0]) < 1.) & (np.abs(theta_test[:, 1]) < 0.5) & (np.abs(theta_test[:, 2]) < 0.5) ]
+
 for i in range(200):
     posterior = metropolis_hastings(model, X_test[i], num_samples=num_samples, proposal_std=proposal_std, device=dvc)
 
