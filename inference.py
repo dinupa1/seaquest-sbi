@@ -67,12 +67,46 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate, amsgrad=True)
 criterion = nn.BCELoss()
 
 tr = ratio_trainner(train_loader, val_loader, model, criterion, optimizer, device=dvc)
-fit_history = tr.fit()
+tr.fit()
+
+model.load_state_dict(tr.best_state)
 
 #
 # test samples
 #
-labels, logits = tr.prediction(test_loader)
+num_iterations = len(test_loader)//2
+loader = iter(test_loader)
+model.eval()
+labels, logits = None, None
+with torch.no_grad():
+    for batch in range(num_iterations):
+
+        x_a, theta_a = next(loader)
+        x_a, theta_a = x_a.double().to(self.device, non_blocking=True), theta_a.double().to(self.device, non_blocking=True)
+
+        x_b, theta_b = next(loader)
+        x_b, theta_b = x_b.double().to(self.device, non_blocking=True), theta_b.double().to(self.device, non_blocking=True)
+
+        _, logit_dep_a = model(x_a, theta_a)
+        _, logit_ind_a = model(x_b, theta_a)
+        _, logit_dep_b = model(x_b, theta_b)
+        _, logit_ind_b = model(x_a, theta_b)
+
+        ones = torch.ones([len(theta_a), 1]).double().to(self.device, non_blocking=True)
+        zeros = torch.zeros([len(theta_a), 1]).double().to(self.device, non_blocking=True)
+
+        labels = torch.cat([labels, ones]) if labels is not None else ones
+        labels = torch.cat([labels, zeros]) if labels is not None else zeros
+        labels = torch.cat([labels, ones]) if labels is not None else ones
+        labels = torch.cat([labels, zeros]) if labels is not None else zeros
+
+        logits = torch.cat([logits, logit_dep_a]) if logits is not None else logit_dep_a
+        logits = torch.cat([logits, logit_ind_a]) if logits is not None else logit_ind_a
+        logits = torch.cat([logits, logit_dep_b]) if logits is not None else logit_dep_b
+        logits = torch.cat([logits, logit_ind_b]) if logits is not None else logit_ind_b
+
+
+logits, labels = labels.detach().cpu().numpy(), logits.detach().cpu().numpy()
 
 #
 # inference
@@ -80,27 +114,24 @@ labels, logits = tr.prediction(test_loader)
 tree = {
         "theta": [],
         "posterior": [],
-        "theta_50": [],
-        "theta_16": [],
-        "theta_83": [],
+        "mean": [],
+        "std": [],
     }
 
 for i in range(200):
     posterior = metropolis_hastings(model, X_test[i], num_samples=num_samples, proposal_std=proposal_std, device=dvc)
-    theta_16, theta_50, theta_83 = np.percentile(posterior, [16.5, 50.0, 83.5], axis=0)
 
     tree["theta"].append(theta_test[i])
     tree["posterior"].append(posterior)
-    tree["theta_50"].append(theta_50)
-    tree["theta_16"].append(theta_16)
-    tree["theta_83"].append(theta_83)
+    tree["mean"].append(np.mean(posterior, axis=0))
+    tree["std"].append(np.std(posterior, axis=0))
 
     print(f"[===> {i+1} samples are done ]")
 
 
 outfile = uproot.recreate("./data/posterior_LH2_messy_MC.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
-outfile["history"] = fit_history
+outfile["history"] = tr.fit_history
 outfile["test_samples"] = {"labels": labels, "logits": logits}
 outfile.close()
 
@@ -116,19 +147,15 @@ X_RS67_LH2 = RS67_LH2_tree["X"].array().to_numpy()
 
 tree = {
         "posterior": [],
-        "theta_50": [],
-        "theta_16": [],
-        "theta_83": [],
+        "mean": [],
+        "std": [],
     }
 
 posterior = metropolis_hastings(model, X_RS67_LH2[0], num_samples=num_samples, proposal_std=proposal_std, device=dvc)
 
-theta_16, theta_50, theta_83 = np.percentile(posterior, [16.5, 50.0, 83.5], axis=0)
-
 tree["posterior"].append(posterior)
-tree["theta_50"].append(theta_50)
-tree["theta_16"].append(theta_16)
-tree["theta_83"].append(theta_83)
+tree["mean"].append(np.mean(posterior, axis=0))
+tree["std"].append(np.std(posterior, axis=0))
 
 outfile = uproot.recreate("./data/posterior_RS67_LH2_data.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree

@@ -10,7 +10,7 @@ void phi_costheta() {
 
     double pi = TMath::Pi();
 
-    TFile* infile = TFile::Open("./data/RS67_LH2_data.root", "read");
+    TFile* infile = TFile::Open("../data/RS67_LH2_data.root", "read");
     TTree* intree = (TTree*)infile->Get("tree");
     int num_events = intree->GetEntries();
 

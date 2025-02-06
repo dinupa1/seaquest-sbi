@@ -119,9 +119,9 @@ dics = {
     "phi": np.concatenate((tree.phi.to_numpy(), tree_mix.phi.to_numpy(), tree_flask.phi.to_numpy())),
     "costh": np.concatenate((tree.costh.to_numpy(), tree_mix.costh.to_numpy(), tree_flask.costh.to_numpy())),
     "D1": np.concatenate((tree.D1.to_numpy(), tree_mix.D1.to_numpy(), tree_flask.D1.to_numpy())),
-    "weight": np.concatenate((np.ones(len1), -1.* np.ones(len2), -1.* weight* np.ones(len3))),
+    "weight": np.concatenate((np.ones(len1), -1.0* np.ones(len2), -1.0* weight* np.ones(len3))),
 }
 
-outfile = uproot.recreate("./data/RS67_LH2_data.root", compression=uproot.ZLIB(4))
+outfile = uproot.recreate("../data/RS67_LH2_data.root", compression=uproot.ZLIB(4))
 outfile["tree"] = dics
 outfile.close()

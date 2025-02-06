@@ -75,9 +75,9 @@ void simulator::samples(int num_samples) {
 
     for(int ii = 0; ii < num_samples; ii++) {
 
-        theta[0] = generator->Uniform(-1., 1.);
-        theta[1] = generator->Uniform(-0.5, 0.5);
-        theta[2] = generator->Uniform(-0.5, 0.5);
+        theta[0] = generator->Uniform(-2.5, 2.5);
+        theta[1] = generator->Uniform(-1.0, 1.0);
+        theta[2] = generator->Uniform(-1.0, 1.0);
 
         std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.4, 0.4));
 
