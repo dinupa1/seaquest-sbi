@@ -75,11 +75,11 @@ void simulator::samples(int num_samples) {
 
     for(int ii = 0; ii < num_samples; ii++) {
 
-        theta[0] = generator->Uniform(-2.5, 2.5);
-        theta[1] = generator->Uniform(-1.0, 1.0);
-        theta[2] = generator->Uniform(-1.0, 1.0);
+        theta[0] = generator->Uniform(-2.0, 2.0);
+        theta[1] = generator->Uniform(-0.6, 0.6);
+        theta[2] = generator->Uniform(-0.6, 0.6);
 
-        std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.4, 0.4));
+        std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.45, 0.45));
 
         rdr->fill(theta, hist, generator);
         read(X, hist);

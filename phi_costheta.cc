@@ -30,11 +30,11 @@ void phi_costheta() {
     intree->SetBranchAddress("D1", &D1);
     intree->SetBranchAddress("weight", &weight);
 
-    TH2D* hist = new TH2D("hist", "", 12, -pi, pi, 12, -0.4, 0.4);
+    TH2D* hist = new TH2D("hist", "", 12, -pi, pi, 12, -0.45, 0.45);
 
     for(int ii = 0; ii < num_events; ii++) {
         intree->GetEntry(ii);
-        if(4.5 < mass && mass < 8.0 && -0.1 < xF && xF < 0.9 && abs(costh) < 0.4 && D1 < 300. && 0.19 < pT && pT < 2.24){hist->Fill(phi, costh, weight);}
+        if(4.5 < mass && mass < 8.0 && -0.1 < xF && xF < 0.9 && abs(costh) < 0.45 && D1 < 300. && 0.19 < pT && pT < 2.24){hist->Fill(phi, costh, weight);}
     }
 
     hist->Scale(1./hist->GetMaximum());

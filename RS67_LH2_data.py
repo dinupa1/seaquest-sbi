@@ -88,7 +88,7 @@ def e906_data_cuts(tree: uproot.models.TTree.Model_TTree_v19, beam_offset: float
 
     # kin_cut_2111_v42 = ((4.5 < events.mass) & (events.mass < 9.0) & (-0.1 < events.xF) & (events.xF < 0.9) & (np.abs(events.costh) < 0.4) & (events.D1 < 300) & (0.19 < events.pT) & (events.pT < 2.24))
 
-    events_cut = events[occ_cut_2111_v42 & track1_cut_2111_v42 & track2_cut_2111_v42 & tracks_cut_2111_v42 & dimuon_cut_2111_v42]
+    events_cut = events[track1_cut_2111_v42 & track2_cut_2111_v42 & tracks_cut_2111_v42 & occ_cut_2111_v42 & dimuon_cut_2111_v42]
 
     print("===> # of dimuons {}".format(len(events_cut)))
 
@@ -122,6 +122,6 @@ dics = {
     "weight": np.concatenate((np.ones(len1), -1.0* np.ones(len2), -1.0* weight* np.ones(len3))),
 }
 
-outfile = uproot.recreate("../data/RS67_LH2_data.root", compression=uproot.ZLIB(4))
+outfile = uproot.recreate("./data/RS67_LH2_data.root", compression=uproot.ZLIB(4))
 outfile["tree"] = dics
 outfile.close()

@@ -82,18 +82,18 @@ with torch.no_grad():
     for batch in range(num_iterations):
 
         x_a, theta_a = next(loader)
-        x_a, theta_a = x_a.double().to(self.device, non_blocking=True), theta_a.double().to(self.device, non_blocking=True)
+        x_a, theta_a = x_a.double().to(dvc, non_blocking=True), theta_a.double().to(dvc, non_blocking=True)
 
         x_b, theta_b = next(loader)
-        x_b, theta_b = x_b.double().to(self.device, non_blocking=True), theta_b.double().to(self.device, non_blocking=True)
+        x_b, theta_b = x_b.double().to(dvc, non_blocking=True), theta_b.double().to(dvc, non_blocking=True)
 
         _, logit_dep_a = model(x_a, theta_a)
         _, logit_ind_a = model(x_b, theta_a)
         _, logit_dep_b = model(x_b, theta_b)
         _, logit_ind_b = model(x_a, theta_b)
 
-        ones = torch.ones([len(theta_a), 1]).double().to(self.device, non_blocking=True)
-        zeros = torch.zeros([len(theta_a), 1]).double().to(self.device, non_blocking=True)
+        ones = torch.ones([len(theta_a), 1]).double().to(dvc, non_blocking=True)
+        zeros = torch.zeros([len(theta_a), 1]).double().to(dvc, non_blocking=True)
 
         labels = torch.cat([labels, ones]) if labels is not None else ones
         labels = torch.cat([labels, zeros]) if labels is not None else zeros
@@ -106,7 +106,7 @@ with torch.no_grad():
         logits = torch.cat([logits, logit_ind_b]) if logits is not None else logit_ind_b
 
 
-logits, labels = labels.detach().cpu().numpy(), logits.detach().cpu().numpy()
+logits, labels = logits.detach().cpu().numpy(), labels.detach().cpu().numpy()
 
 #
 # inference

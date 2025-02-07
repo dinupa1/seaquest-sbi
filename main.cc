@@ -23,10 +23,10 @@ int main() {
     std::cout << "[===> simulation]" << std::endl;
     gSystem->Exec("python simulations.py");
 
-    /*
     std::cout << "[===> inference]" << std::endl;
     gSystem->Exec("python inference.py");
 
+    /*
     std::cout << "[===> uncertainty]" << std::endl;
     gSystem->Exec("python uncertainty.py");
 
