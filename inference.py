@@ -153,7 +153,7 @@ outfile.close()
 #
 print("[===> inference RS67 LH2 data]")
 
-RS67_LH2_tree = uproot.open(f"./data/{base_input_name}:out_tree")
+RS67_LH2_tree = uproot.open(f"./data/{base_input_name}.root:out_tree")
 X_RS67_LH2 = RS67_LH2_tree["X"].array().to_numpy()
 
 tree = {
