@@ -2,7 +2,7 @@
 #include <iostream>
 
 
-int setup() {
+int __build__() {
 
     gSystem->CompileMacro("simulator.cc", "kfgO", "lib_simulator");
 

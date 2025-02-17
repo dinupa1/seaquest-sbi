@@ -41,17 +41,25 @@ proposal_std: float = 0.001
 learning_rate: float = 0.0001
 num_samples: int = 10000
 
+base_input_name = "RS67_LH2_hist"
+base_output_name = "posterior_RS67_LH2_data"
+
 #
 # inference model
 #
 
 # train events
-out_tree = uproot.open("./data/outputs.root:out_tree")
-X = out_tree["X"].array().to_numpy()
-theta = out_tree["theta"].array().to_numpy()
+train_tree = uproot.open("./data/outputs.root:train_tree")
+X_train = train_tree["X"].array().to_numpy()
+theta_train = train_tree["theta"].array().to_numpy()
 
-X_train_val, X_test, theta_train_val, theta_test = train_test_split(X, theta, test_size=0.1, shuffle=True)
-X_train, X_val, theta_train, theta_val = train_test_split(X_train_val, theta_train_val, test_size=0.2, shuffle=True)
+val_tree = uproot.open("./data/outputs.root:val_tree")
+X_val = val_tree["X"].array().to_numpy()
+theta_val = val_tree["theta"].array().to_numpy()
+
+test_tree = uproot.open("./data/outputs.root:test_tree")
+X_test = test_tree["X"].array().to_numpy()
+theta_test = test_tree["theta"].array().to_numpy()
 
 ds_train = ratio_dataset(X_train, theta_train)
 ds_val = ratio_dataset(X_val, theta_val)
@@ -118,8 +126,8 @@ tree = {
         "std": [],
     }
 
-X_test = X_test[(np.abs(theta_test[:, 0]) < 1.) & (np.abs(theta_test[:, 1]) < 0.5) & (np.abs(theta_test[:, 2]) < 0.5) ]
-theta_test = theta_test[(np.abs(theta_test[:, 0]) < 1.) & (np.abs(theta_test[:, 1]) < 0.5) & (np.abs(theta_test[:, 2]) < 0.5) ]
+# X_test = X_test[(np.abs(theta_test[:, 0]) < 1.) & (np.abs(theta_test[:, 1]) < 0.5) & (np.abs(theta_test[:, 2]) < 0.5) ]
+# theta_test = theta_test[(np.abs(theta_test[:, 0]) < 1.) & (np.abs(theta_test[:, 1]) < 0.5) & (np.abs(theta_test[:, 2]) < 0.5) ]
 
 for i in range(200):
     posterior = metropolis_hastings(model, X_test[i], num_samples=num_samples, proposal_std=proposal_std, device=dvc)
@@ -145,7 +153,7 @@ outfile.close()
 #
 print("[===> inference RS67 LH2 data]")
 
-RS67_LH2_tree = uproot.open("./data/RS67_LH2_hist.root:out_tree")
+RS67_LH2_tree = uproot.open(f"./data/{base_input_name}:out_tree")
 X_RS67_LH2 = RS67_LH2_tree["X"].array().to_numpy()
 
 tree = {
@@ -160,6 +168,36 @@ tree["posterior"].append(posterior)
 tree["mean"].append(np.mean(posterior, axis=0))
 tree["std"].append(np.std(posterior, axis=0))
 
-outfile = uproot.recreate("./data/posterior_RS67_LH2_data.root", compression=uproot.ZLIB(4))
+outfile = uproot.recreate(f"./data/{base_output_name}.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
 outfile.close()
+
+
+#
+# systematic cuts
+#
+
+systematic_cuts = ["M_4.4", "M_4.6", "costh_0.425", "costh_0.475", "PoT_0.98", "PoT_1.02"]
+
+for cut in systematic_cuts:
+
+    print(f"[===> inference RS67 LH2 data with {cut}]")
+
+    RS67_LH2_tree = uproot.open(f"./data/{base_input_name}_{cut}.root:out_tree")
+    X_RS67_LH2 = RS67_LH2_tree["X"].array().to_numpy()
+
+    tree = {
+        "posterior": [],
+        "mean": [],
+        "std": [],
+    }
+
+    posterior = metropolis_hastings(model, X_RS67_LH2[0], num_samples=num_samples, proposal_std=proposal_std, device=dvc)
+
+    tree["posterior"].append(posterior)
+    tree["mean"].append(np.mean(posterior, axis=0))
+    tree["std"].append(np.std(posterior, axis=0))
+
+    outfile = uproot.recreate(f"./data/{base_output_name}_{cut}.root", compression=uproot.ZLIB(4))
+    outfile["tree"] = tree
+    outfile.close()

@@ -6,11 +6,13 @@
 #include <iostream>
 
 
-void phi_costheta() {
+int phi_costheta() {
+
+    gSystem ->Exec("python chuck_cuts.py");
 
     double pi = TMath::Pi();
 
-    TFile* infile = TFile::Open("../data/RS67_LH2_data.root", "read");
+    TFile* infile = TFile::Open("./data/RS67_LH2_data.root", "read");
     TTree* intree = (TTree*)infile->Get("tree");
     int num_events = intree->GetEntries();
 
@@ -34,7 +36,7 @@ void phi_costheta() {
 
     for(int ii = 0; ii < num_events; ii++) {
         intree->GetEntry(ii);
-        if(4.5 < mass && mass < 8.0 && -0.1 < xF && xF < 0.9 && abs(costh) < 0.45 && D1 < 300. && 0.19 < pT && pT < 2.24){hist->Fill(phi, costh, weight);}
+        hist->Fill(phi, costh, weight);
     }
 
     hist->Scale(1./hist->GetMaximum());
@@ -59,4 +61,6 @@ void phi_costheta() {
 
     out_tree->Write();
     outputs->Close();
+
+    return 0;
 }

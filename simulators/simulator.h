@@ -16,7 +16,7 @@
 double cross_section(double lambda, double mu, double nu, double phi, double costh);
 
 double pi = TMath::Pi();
-double effective_entries = 4825.14;
+int num_entries = 2000;
 
 class reader {
     double pT;
@@ -35,17 +35,21 @@ public:
 
 
 class simulator {
-    reader* rdr;
+    reader* train_rdr;
+    reader* val_rdr;
+    reader* test_rdr;
     std::unique_ptr<TRandom3> generator;
 public:
     double X[1][12][12];
     double theta[3];
     TFile* outputs;
-    TTree* out_tree;
+    TTree* train_tree;
+    TTree* val_tree;
+    TTree* test_tree;
     simulator();
     virtual ~simulator(){;}
     void read(double X[1][12][12], std::unique_ptr<TH2D> &hist);
-    void samples(int num_samples);
+    void samples(int train_samples, int val_samples, int test_samples);
     void save();
 };
 

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import uproot
 import awkward as ak
 
+
 def e906_data_cuts(tree: uproot.models.TTree.Model_TTree_v19, beam_offset: float = 1.6) -> uproot.models.TTree.Model_TTree_v19:
 
     branch = tree.keys()
@@ -51,24 +52,24 @@ def e906_data_cuts(tree: uproot.models.TTree.Model_TTree_v19, beam_offset: float
     )
 
     track2_cut_2111_v42 = (
-            (events.chisq2_target < 15.) &
-            (events.pz2_st1 > 9.) &
-            (events.pz2_st1 < 75.) &
-            (events.nHits2 > 13) &
-            (events.x2_t * events.x2_t + (events.y2_t - beam_offset) * (events.y2_t - beam_offset) < 320.) &
-            (events.x2_d * events.x2_d + (events.y2_d - beam_offset) * (events.y2_d - beam_offset) < 1100.) &
-            (events.x2_d * events.x2_d + (events.y2_d - beam_offset) * (events.y2_d - beam_offset) > 16.) &
-            (events.chisq2_target < 1.5 * events.chisq2_upstream) &
-            (events.chisq2_target < 1.5 * events.chisq2_dump) &
-            (events.z2_v < -5.) &
-            (events.z2_v > -320.) &
-            (events.chisq2 / (events.nHits2 - 5) < 12) &
-            ((events.y2_st1 - beam_offset) / (events.y2_st3 - beam_offset) < 1.) &
-            (np.abs(np.abs(events.px2_st1 - events.px2_st3) - 0.416) < 0.008) &
-            (np.abs(events.py2_st1 - events.py2_st3) < 0.008) &
-            (np.abs(events.pz2_st1 - events.pz2_st3) < 0.08) &
-            ((events.y2_st1 - beam_offset) * (events.y2_st3 - beam_offset) > 0.) &
-            (np.abs(events.py2_st1) > 0.02)
+        (events.chisq2_target < 15.) &
+        (events.pz2_st1 > 9.) &
+        (events.pz2_st1 < 75.) &
+        (events.nHits2 > 13) &
+        (events.x2_t * events.x2_t + (events.y2_t - beam_offset) * (events.y2_t - beam_offset) < 320.) &
+        (events.x2_d * events.x2_d + (events.y2_d - beam_offset) * (events.y2_d - beam_offset) < 1100.) &
+        (events.x2_d * events.x2_d + (events.y2_d - beam_offset) * (events.y2_d - beam_offset) > 16.) &
+        (events.chisq2_target < 1.5 * events.chisq2_upstream) &
+        (events.chisq2_target < 1.5 * events.chisq2_dump) &
+        (events.z2_v < -5.) &
+        (events.z2_v > -320.) &
+        (events.chisq2 / (events.nHits2 - 5) < 12) &
+        ((events.y2_st1 - beam_offset) / (events.y2_st3 - beam_offset) < 1.) &
+        (np.abs(np.abs(events.px2_st1 - events.px2_st3) - 0.416) < 0.008) &
+        (np.abs(events.py2_st1 - events.py2_st3) < 0.008) &
+        (np.abs(events.pz2_st1 - events.pz2_st3) < 0.08) &
+        ((events.y2_st1 - beam_offset) * (events.y2_st3 - beam_offset) > 0.) &
+        (np.abs(events.py2_st1) > 0.02)
     )
 
     tracks_cut_2111_v42 = (
@@ -86,9 +87,9 @@ def e906_data_cuts(tree: uproot.models.TTree.Model_TTree_v19, beam_offset: float
             (events.D1 + events.D2 + events.D3 < 1000)
     )
 
-    # kin_cut_2111_v42 = ((4.5 < events.mass) & (events.mass < 9.0) & (-0.1 < events.xF) & (events.xF < 0.9) & (np.abs(events.costh) < 0.4) & (events.D1 < 300) & (0.19 < events.pT) & (events.pT < 2.24))
+    kin_cut_2111_v42 = ((4.5 < events.mass) & (events.mass < 8.0) & (-0.1 < events.xF) & (events.xF <= 0.95) & (np.abs(events.costh) < 0.45) & (events.D1 < 300) & (0.19 < events.pT) & (events.pT <= 0.55))
 
-    events_cut = events[track1_cut_2111_v42 & track2_cut_2111_v42 & tracks_cut_2111_v42 & occ_cut_2111_v42 & dimuon_cut_2111_v42]
+    events_cut = events[track1_cut_2111_v42 & track2_cut_2111_v42 & tracks_cut_2111_v42 & dimuon_cut_2111_v42 & kin_cut_2111_v42 & occ_cut_2111_v42]
 
     print("===> # of dimuons {}".format(len(events_cut)))
 
