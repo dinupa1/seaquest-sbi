@@ -63,7 +63,7 @@ class basic_network(nn.Module):
 
 
 class Ratio_Network(nn.Module):
-    def __init__(input_channels:int, theta_dim:int, num_classes:int):
+    def __init__(self, input_channels:int, theta_dim:int, num_classes:int):
         super(Ratio_Network, self).__init__()
 
         self.conv_block = nn.Sequential(
