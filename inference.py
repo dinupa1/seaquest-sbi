@@ -22,6 +22,7 @@ from sklearn.metrics import confusion_matrix
 
 from sbi import resnet_12x12
 from sbi import basic_network
+from sbi import ratio_net12x12
 from sbi import ratio_dataset
 from sbi import ratio_trainner
 from sbi import metropolis_hastings
@@ -69,7 +70,7 @@ train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True, num_wor
 val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False, num_workers=4)
 test_loader = DataLoader(ds_test, batch_size=batch_size, shuffle=False, num_workers=4)
 
-model = basic_network().double().to(dvc)
+model = ratio_net12x12().double().to(dvc)
 
 optimizer = optim.Adam(model.parameters(), lr=learning_rate, amsgrad=True)
 criterion = nn.BCELoss()

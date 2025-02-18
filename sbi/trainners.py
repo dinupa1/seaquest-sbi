@@ -157,10 +157,10 @@ class ratio_trainner:
 
 
 
-def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.005, device=None):
+def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.001, device=None):
     chain = []
 
-    theta_current = torch.tensor([0., 0., 0.]).double().to(device)
+    theta_current = torch.tensor([1., 0., 0.]).double().to(device)
     X_tensor = torch.from_numpy(X).double().to(device)
 
     ratio_model.eval()

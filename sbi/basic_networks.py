@@ -62,11 +62,41 @@ class basic_network(nn.Module):
         return log_ratio, logit
 
 
+def Ratio_Network(nn.Module):
+    def __init__(input_channels:int, theta_dim:int, num_classes:int):
+        super(Ratio_Network, self).__init__()
 
-# m = basic_network()
-# x = torch.randn(5, 1, 12, 12)
-# theta = torch.randn(5, 3)
-# print(m)
-# total_trainable_params = sum(p.numel() for p in m.parameters() if p.requires_grad)
-# print(f"total trainable params: {total_trainable_params}")
-# print(m(x, theta))
+        self.conv_block = nn.Sequential(
+                nn.Conv2d(in_channels=input_channels, out_channels=32, kernel_size=3, stride=1, padding=1),
+                nn.Maxpool2d(kernel_size=2, stride=2, padding=0),
+                nn.ReLU(),
+                nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=1, padding=1),
+                nn.ReLU(),
+            )
+
+        self.mlp = nn.Sequential(
+                nn.Linear(64* 6* 6 + 3, 128, bias=True),
+                nn.BatchNorm1d(128),
+                nn.ReLU(),
+                nn.Linear(128, 128, bias=True),
+                nn.BatchNorm1d(128),
+                nn.Dropout(p=0.3),
+                nn.ReLU(),
+                nn.Linear(128, num_classes),
+            )
+
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, inputs, theta):
+
+        out = self.conv_block(inputs)
+        out = torch.flatten(out, 1)
+        out = torch.cat([out, theta], dim=1)
+        log_ratio = self.mlp(out)
+        logit = self.sigmoid(log_ratio)
+
+        return log_ratio, logit
+
+
+def ratio_net12x12(input_channels:int = 1, theta_dim:int = 3, num_classes:int = 1):
+    return Ratio_Network(input_channels, theta_dim, num_classes)
