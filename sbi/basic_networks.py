@@ -45,10 +45,10 @@ class basic_network(nn.Module):
     def __init__(self, input_dim:int = 12 * 12, theta_dim:int = 3, num_classes:int = 1):
         super(basic_network, self).__init__()
 
-        self.layer1 = layers_with_relu(input_dim + theta_dim, 100)
-        self.layer2 = layers_with_relu(100, 100)
-        self.layer3 = layers_with_relu(100, 100)
-        self.fc = nn.Linear(100, num_classes, bias=True)
+        self.layer1 = layers_with_relu(input_dim + theta_dim, 128)
+        self.layer2 = layers_with_relu(128, 128)
+        self.layer3 = layers_with_relu(128, 128)
+        self.fc = nn.Linear(128, num_classes, bias=True)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x, theta):
@@ -66,17 +66,16 @@ class Ratio_Network(nn.Module):
     def __init__(self, input_channels:int, theta_dim:int, num_classes:int):
         super(Ratio_Network, self).__init__()
 
-        self.conv_block = nn.Sequential(
-                nn.Conv2d(in_channels=input_channels, out_channels=8, kernel_size=3, stride=1, padding=1),
-                nn.MaxPool2d(kernel_size=2, stride=2, padding=0),
+        self.conv_head = nn.Sequential(
+                nn.Conv2d(in_channels=input_channels, out_channels=4, kernel_size=3, stride=1, padding=1),
                 nn.ReLU(),
-                nn.Conv2d(in_channels=8, out_channels=16, kernel_size=3, stride=1, padding=1),
-                nn.MaxPool2d(kernel_size=2, stride=2, padding=0),
+                nn.Conv2d(in_channels=4, out_channels=4, kernel_size=3, stride=1, padding=1),
                 nn.ReLU(),
+                nn.AdaptiveAvgPool2d((2, 2)),
             )
 
-        self.mlp = nn.Sequential(
-                nn.Linear(16* 3* 3 + 3, 128, bias=True),
+        self.mlp_head = nn.Sequential(
+                nn.Linear(4* 2* 2 + 3, 128, bias=True),
                 nn.ReLU(),
                 nn.Linear(128, 128, bias=True),
                 nn.ReLU(),
@@ -87,10 +86,10 @@ class Ratio_Network(nn.Module):
 
     def forward(self, inputs, theta):
 
-        out = self.conv_block(inputs)
+        out = self.conv_head(inputs)
         out = torch.flatten(out, 1)
         out = torch.cat([out, theta], dim=1)
-        log_ratio = self.mlp(out)
+        log_ratio = self.mlp_head(out)
         logit = self.sigmoid(log_ratio)
 
         return log_ratio, logit

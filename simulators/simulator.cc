@@ -85,9 +85,9 @@ void simulator::samples(int train_samples, int val_samples, int test_samples) {
 
     for(int ii = 0; ii < train_samples; ii++) {
 
-        theta[0] = generator->Uniform(0.5, 1.5);
-        theta[1] = generator->Uniform(-0.5, 0.5);
-        theta[2] = generator->Uniform(-0.5, 0.5);
+        theta[0] = generator->Uniform(lambda_min, lambda_max);
+        theta[1] = generator->Uniform(mu_min, mu_max);
+        theta[2] = generator->Uniform(nu_min, nu_max);
 
         std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.45, 0.45));
 
@@ -102,9 +102,9 @@ void simulator::samples(int train_samples, int val_samples, int test_samples) {
 
     for(int ii = 0; ii < val_samples; ii++) {
 
-        theta[0] = generator->Uniform(0.5, 1.5);
-        theta[1] = generator->Uniform(-0.5, 0.5);
-        theta[2] = generator->Uniform(-0.5, 0.5);
+        theta[0] = generator->Uniform(lambda_min, lambda_max);
+        theta[1] = generator->Uniform(mu_min, mu_max);
+        theta[2] = generator->Uniform(nu_min, nu_max);
 
         std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.45, 0.45));
 
@@ -119,9 +119,9 @@ void simulator::samples(int train_samples, int val_samples, int test_samples) {
 
     for(int ii = 0; ii < test_samples; ii++) {
 
-        theta[0] = generator->Uniform(0.5, 1.5);
-        theta[1] = generator->Uniform(-0.5, 0.5);
-        theta[2] = generator->Uniform(-0.5, 0.5);
+        theta[0] = generator->Uniform(lambda_min, lambda_max);
+        theta[1] = generator->Uniform(mu_min, mu_max);
+        theta[2] = generator->Uniform(nu_min, nu_max);
 
         std::unique_ptr<TH2D> hist(new TH2D("hist", "", 12, -pi, pi, 12, -0.45, 0.45));
 

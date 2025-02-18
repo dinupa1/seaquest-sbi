@@ -38,12 +38,12 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
 batch_size: int = 10000
-proposal_std: float = 0.001
+proposal_std: float = 0.0005
 learning_rate: float = 0.0001
 num_samples: int = 10000
 
-base_input_name = "RS67_LH2_hist"
-base_output_name = "posterior_RS67_LH2_data"
+base_input_name = "RS67_LH2_hist_pT_0"
+base_output_name = "posterior_RS67_LH2_data_pT_0"
 
 #
 # inference model
@@ -70,7 +70,7 @@ train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=True, num_wor
 val_loader = DataLoader(ds_val, batch_size=batch_size, shuffle=False, num_workers=4)
 test_loader = DataLoader(ds_test, batch_size=batch_size, shuffle=False, num_workers=4)
 
-model = ratio_net12x12().double().to(dvc)
+model = basic_network().double().to(dvc)
 
 optimizer = optim.Adam(model.parameters(), lr=learning_rate, amsgrad=True)
 criterion = nn.BCELoss()
@@ -127,9 +127,6 @@ tree = {
         "std": [],
     }
 
-# X_test = X_test[(np.abs(theta_test[:, 0]) < 1.) & (np.abs(theta_test[:, 1]) < 0.5) & (np.abs(theta_test[:, 2]) < 0.5) ]
-# theta_test = theta_test[(np.abs(theta_test[:, 0]) < 1.) & (np.abs(theta_test[:, 1]) < 0.5) & (np.abs(theta_test[:, 2]) < 0.5) ]
-
 for i in range(200):
     posterior = metropolis_hastings(model, X_test[i], num_samples=num_samples, proposal_std=proposal_std, device=dvc)
 
@@ -141,7 +138,7 @@ for i in range(200):
     print(f"[===> {i+1} samples are done ]")
 
 
-outfile = uproot.recreate("./data/posterior_LH2_messy_MC.root", compression=uproot.ZLIB(4))
+outfile = uproot.recreate("./data/posterior_LH2_messy_MC_pT_0.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
 outfile["history"] = tr.fit_history
 outfile["test_samples"] = {"labels": labels, "logits": logits}

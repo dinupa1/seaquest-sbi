@@ -8,7 +8,7 @@
 
 int phi_costheta() {
 
-    gSystem ->Exec("python chuck_cuts.py");
+    gSystem ->Exec("python chuck_cuts_2111_v42.py");
 
     double pi = TMath::Pi();
 
@@ -44,7 +44,7 @@ int phi_costheta() {
     std::cout << hist->GetEffectiveEntries() << std::endl;
     std::cout << hist->GetEntries() << std::endl;
 
-    TFile* outputs = new TFile("./data/RS67_LH2_hist.root", "recreate");
+    TFile* outputs = new TFile("./data/RS67_LH2_hist_pT_0.root", "recreate");
     TTree* out_tree = new TTree("out_tree", "out_tree");
 
     double X[1][12][12];

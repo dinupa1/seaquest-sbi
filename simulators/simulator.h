@@ -17,6 +17,12 @@ double cross_section(double lambda, double mu, double nu, double phi, double cos
 
 double pi = TMath::Pi();
 int num_entries = 2000;
+double lambda_min = -2.;
+double lambda_max = 2.;
+double mu_min = -0.5;
+double mu_max = 0.5;
+double nu_min = -0.5;
+double nu_max = 0.5;
 
 class reader {
     double pT;
