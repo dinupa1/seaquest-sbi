@@ -62,7 +62,7 @@ class basic_network(nn.Module):
         return log_ratio, logit
 
 
-def Ratio_Network(nn.Module):
+class Ratio_Network(nn.Module):
     def __init__(input_channels:int, theta_dim:int, num_classes:int):
         super(Ratio_Network, self).__init__()
 
