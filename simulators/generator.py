@@ -12,7 +12,7 @@ np.random.seed(seed)
 
 print("[===> E906 messy MC]")
 
-save = uproot.open("./data/LH2_messy_MC_data.root:save")
+save = uproot.open("../data/LH2_messy_MC_events.root:save")
 branches = ["mass", "pT", "xF", "phi", "costh", "true_mass", "true_pT", "true_xF", "true_phi", "true_costh", "occuD1"]
 events = save.arrays(branches)
 
