@@ -67,10 +67,9 @@ class Ratio_Network(nn.Module):
         super(Ratio_Network, self).__init__()
 
         self.conv_block = nn.Sequential(
-                nn.Conv2d(in_channels=input_channels, out_channels=32, kernel_size=3, stride=1, padding=1),
+                nn.Conv2d(in_channels=input_channels, out_channels=8, kernel_size=3, stride=1, padding=1),
+                nn.Conv2d(in_channels=input_channels, out_channels=16, kernel_size=3, stride=1, padding=1),
                 nn.MaxPool2d(kernel_size=2, stride=2, padding=0),
-                nn.ReLU(),
-                nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=1, padding=1),
                 nn.ReLU(),
             )
 
