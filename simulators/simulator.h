@@ -16,7 +16,7 @@
 double cross_section(double lambda, double mu, double nu, double phi, double costh);
 
 double pi = TMath::Pi();
-int num_entries = 2100;
+int effective_entries = 1964.65;
 double lambda_min = -2.;
 double lambda_max = 2.;
 double mu_min = -0.8;
