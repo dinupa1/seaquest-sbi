@@ -38,7 +38,7 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
 batch_size: int = 10000
-proposal_std: float = 0.0005
+proposal_std: float = 0.01
 learning_rate: float = 0.0001
 num_samples: int = 10000
 
@@ -175,27 +175,27 @@ outfile.close()
 # systematic cuts
 #
 
-systematic_cuts = ["M_4.4", "M_4.6", "costh_0.425", "costh_0.475", "PoT_0.98", "PoT_1.02"]
-
-for cut in systematic_cuts:
-
-    print(f"[===> inference RS67 LH2 data with {cut}]")
-
-    RS67_LH2_tree = uproot.open(f"./data/{base_input_name}_{cut}.root:out_tree")
-    X_RS67_LH2 = RS67_LH2_tree["X"].array().to_numpy()
-
-    tree = {
-        "posterior": [],
-        "mean": [],
-        "std": [],
-    }
-
-    posterior = metropolis_hastings(model, X_RS67_LH2[0], num_samples=num_samples, proposal_std=proposal_std, device=dvc)
-
-    tree["posterior"].append(posterior)
-    tree["mean"].append(np.mean(posterior, axis=0))
-    tree["std"].append(np.std(posterior, axis=0))
-
-    outfile = uproot.recreate(f"./data/{base_output_name}_{cut}.root", compression=uproot.ZLIB(4))
-    outfile["tree"] = tree
-    outfile.close()
+# systematic_cuts = ["M_4.4", "M_4.6", "costh_0.425", "costh_0.475", "PoT_0.98", "PoT_1.02"]
+#
+# for cut in systematic_cuts:
+#
+#     print(f"[===> inference RS67 LH2 data with {cut}]")
+#
+#     RS67_LH2_tree = uproot.open(f"./data/{base_input_name}_{cut}.root:out_tree")
+#     X_RS67_LH2 = RS67_LH2_tree["X"].array().to_numpy()
+#
+#     tree = {
+#         "posterior": [],
+#         "mean": [],
+#         "std": [],
+#     }
+#
+#     posterior = metropolis_hastings(model, X_RS67_LH2[0], num_samples=num_samples, proposal_std=proposal_std, device=dvc)
+#
+#     tree["posterior"].append(posterior)
+#     tree["mean"].append(np.mean(posterior, axis=0))
+#     tree["std"].append(np.std(posterior, axis=0))
+#
+#     outfile = uproot.recreate(f"./data/{base_output_name}_{cut}.root", compression=uproot.ZLIB(4))
+#     outfile["tree"] = tree
+#     outfile.close()

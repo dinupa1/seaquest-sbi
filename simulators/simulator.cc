@@ -13,7 +13,7 @@
 
 double cross_section(double lambda, double mu, double nu, double phi, double costh) {
     double weight = 1. + lambda* costh* costh + 2.* mu* costh* sqrt(1. - costh* costh) *cos(phi) + 0.5* nu* (1. - costh* costh)* cos(2.* phi);
-    return weight/(1. + costh* costh);
+    return (4./(lambda + 3))* weight/(1. + costh* costh);
 }
 
 
@@ -38,8 +38,8 @@ void reader::fill(double theta[3], std::unique_ptr<TH2D> &hist, std::unique_ptr<
         hist->Fill(phi, costh, cross_section(theta[0], theta[1], theta[2], true_phi, true_costh));
     }
 
-    // std::cout << "===> effective entries " << hist->GetEffectiveEntries() << std::endl;
-    // std::cout << "===> total entries " << hist->GetEntries() << std::endl;
+    std::cout << "===> effective entries " << hist->GetEffectiveEntries() << std::endl;
+    std::cout << "===> total entries " << hist->GetEntries() << std::endl;
 }
 
 

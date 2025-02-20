@@ -21,7 +21,7 @@ from sklearn.utils import resample
 
 
 class ratio_trainner:
-    def __init__(self, train_dataloader, val_dataloader, ratio_model, criterion, optimizer, max_epoch=100, patience=10, device=None):
+    def __init__(self, train_dataloader, val_dataloader, ratio_model, criterion, optimizer, max_epoch=1000, patience=10, device=None):
         self.train_dataloader = train_dataloader
         self.val_dataloader = val_dataloader
         self.ratio_model = ratio_model
@@ -171,7 +171,7 @@ def metropolis_hastings(ratio_model, X, num_samples=10000, proposal_std=0.001, d
 
             theta_proposal = torch.from_numpy(theta_proposal).double().to(device)
 
-            if (theta_proposal[0] < -2.0 or 2.0 < theta_proposal[0] or theta_proposal[1] < -0.5 or 0.5 < theta_proposal[1] or theta_proposal[2] < -0.5 or 0.5 < theta_proposal[2]):
+            if (theta_proposal[0] < -2.0 or 2.0 < theta_proposal[0] or theta_proposal[1] < -0.8 or 0.8 < theta_proposal[1] or theta_proposal[2] < -0.8 or 0.8 < theta_proposal[2]):
                 chain.append(theta_current.cpu().numpy())
                 continue
 

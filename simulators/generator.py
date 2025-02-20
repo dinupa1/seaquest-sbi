@@ -12,11 +12,11 @@ np.random.seed(seed)
 
 print("[===> E906 messy MC]")
 
-save = uproot.open("../data/LH2_messy_MC_events.root:save")
+save = uproot.open("./data/LH2_messy_MC_events.root:save")
 branches = ["mass", "pT", "xF", "phi", "costh", "true_mass", "true_pT", "true_xF", "true_phi", "true_costh", "occuD1"]
 events = save.arrays(branches)
 
-events_after_cuts = events[(events.mass > 4.5) & (events.mass < 8.) & (events.xF > -0.1) & (events.xF < 0.9) & (np.abs(events.costh) < 0.45) & (events.occuD1 < 300.) & (0.19 < events.pT) & (events.pT <= 0.55)]
+events_after_cuts = events[(events.mass > 4.5) & (events.mass < 8.) & (events.xF > -0.1) & (events.xF < 0.95) & (np.abs(events.costh) < 0.45) & (events.occuD1 < 300.) & (0.19 < events.pT) & (events.pT <= 0.55)]
 
 
 train_val_events, test_events = train_test_split(events_after_cuts.to_numpy(), test_size=0.2, shuffle=True)
