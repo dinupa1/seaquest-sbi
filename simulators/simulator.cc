@@ -38,8 +38,8 @@ void reader::fill(double theta[3], std::unique_ptr<TH2D> &hist, std::unique_ptr<
         hist->Fill(phi, costh, cross_section(theta[0], theta[1], theta[2], true_phi, true_costh));
     }
 
-    std::cout << "===> effective entries " << hist->GetEffectiveEntries() << std::endl;
-    std::cout << "===> total entries " << hist->GetEntries() << std::endl;
+    // std::cout << "===> effective entries " << hist->GetEffectiveEntries() << std::endl;
+    // std::cout << "===> total entries " << hist->GetEntries() << std::endl;
 }
 
 

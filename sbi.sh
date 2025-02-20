@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# source /cvmfs/sft.cern.ch/lcg/views/LCG_105_cuda/x86_64-el9-gcc11-opt/setup.sh
+source /cvmfs/sft.cern.ch/lcg/views/LCG_105_cuda/x86_64-el9-gcc11-opt/setup.sh
 
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
