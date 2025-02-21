@@ -42,8 +42,9 @@ proposal_std: float = 0.01
 learning_rate: float = 0.0001
 num_samples: int = 10000
 
-base_input_name = "RS67_LH2_hist_pT_0"
-base_output_name = "posterior_RS67_LH2_data_pT_0"
+data_input_name = "RS67_LH2_hist_pT_0"
+data_output_name = "posterior_RS67_LH2_data_pT_0"
+MC_output_name = "posterior_LH2_messy_MC_pT_0"
 
 #
 # inference model
@@ -138,7 +139,7 @@ for i in range(200):
     print(f"[===> {i+1} samples are done ]")
 
 
-outfile = uproot.recreate("./data/posterior_LH2_messy_MC_pT_0.root", compression=uproot.ZLIB(4))
+outfile = uproot.recreate(f"./data/{MC_output_name}.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
 outfile["history"] = tr.fit_history
 outfile["test_samples"] = {"labels": labels, "logits": logits}
@@ -151,7 +152,7 @@ outfile.close()
 #
 print("[===> inference RS67 LH2 data]")
 
-RS67_LH2_tree = uproot.open(f"./data/{base_input_name}.root:out_tree")
+RS67_LH2_tree = uproot.open(f"./data/{data_input_name}.root:out_tree")
 X_RS67_LH2 = RS67_LH2_tree["X"].array().to_numpy()
 
 tree = {
@@ -166,36 +167,6 @@ tree["posterior"].append(posterior)
 tree["mean"].append(np.mean(posterior, axis=0))
 tree["std"].append(np.std(posterior, axis=0))
 
-outfile = uproot.recreate(f"./data/{base_output_name}.root", compression=uproot.ZLIB(4))
+outfile = uproot.recreate(f"./data/{data_output_name}.root", compression=uproot.ZLIB(4))
 outfile["tree"] = tree
 outfile.close()
-
-
-#
-# systematic cuts
-#
-
-# systematic_cuts = ["M_4.4", "M_4.6", "costh_0.425", "costh_0.475", "PoT_0.98", "PoT_1.02"]
-#
-# for cut in systematic_cuts:
-#
-#     print(f"[===> inference RS67 LH2 data with {cut}]")
-#
-#     RS67_LH2_tree = uproot.open(f"./data/{base_input_name}_{cut}.root:out_tree")
-#     X_RS67_LH2 = RS67_LH2_tree["X"].array().to_numpy()
-#
-#     tree = {
-#         "posterior": [],
-#         "mean": [],
-#         "std": [],
-#     }
-#
-#     posterior = metropolis_hastings(model, X_RS67_LH2[0], num_samples=num_samples, proposal_std=proposal_std, device=dvc)
-#
-#     tree["posterior"].append(posterior)
-#     tree["mean"].append(np.mean(posterior, axis=0))
-#     tree["std"].append(np.std(posterior, axis=0))
-#
-#     outfile = uproot.recreate(f"./data/{base_output_name}_{cut}.root", compression=uproot.ZLIB(4))
-#     outfile["tree"] = tree
-#     outfile.close()

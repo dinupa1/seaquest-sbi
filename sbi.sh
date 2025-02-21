@@ -25,7 +25,7 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         -b| --bootstrap)
             echo "[===> running bootstrapping method]"
-            python python uncertainty.py
+            python uncertainty.py
             ;;
         *)
             echo "Unknown option: $1"

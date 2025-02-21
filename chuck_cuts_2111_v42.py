@@ -87,7 +87,7 @@ def e906_data_cuts(tree: uproot.models.TTree.Model_TTree_v19, beam_offset: float
             (events.D1 + events.D2 + events.D3 < 1000)
     )
 
-    kin_cut_2111_v42 = ((4.5 < events.mass) & (events.mass < 8.0) & (-0.1 < events.xF) & (events.xF <= 0.95) & (np.abs(events.costh) < 0.45) & (events.D1 < 300) & (0.19 < events.pT) & (events.pT <= 0.55))
+    kin_cut_2111_v42 = ((4.5 < events.mass) & (events.mass < 8.0) & (-0.1 < events.xF) & (events.xF <= 0.95) & (np.abs(events.costh) < 0.45) & (events.D1 < 300) & (0.19 < events.pT) & (events.pT <=0.55))
 
     events_cut = events[track1_cut_2111_v42 & track2_cut_2111_v42 & tracks_cut_2111_v42 & dimuon_cut_2111_v42 & kin_cut_2111_v42 & occ_cut_2111_v42]
 
