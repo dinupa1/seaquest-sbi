@@ -87,7 +87,7 @@ def e906_data_cuts(tree: uproot.models.TTree.Model_TTree_v19, beam_offset: float
             (events.D1 + events.D2 + events.D3 < 1000)
     )
 
-    kin_cut_2111_v42 = ((4.5 < events.mass) & (events.mass < 8.0) & (-0.1 < events.xF) & (events.xF <= 0.95) & (np.abs(events.costh) < 0.45) & (events.D1 < 300) & (0.19 < events.pT) & (events.pT <=0.55))
+    kin_cut_2111_v42 = ((4.5 < events.mass) & (events.mass < 8.0) & (-0.1 < events.xF) & (events.xF < 0.95) & (np.abs(events.costh) < 0.45) & (events.D1 < 300) & (0.19 < events.pT) & (events.pT < 2.24))
 
     events_cut = events[track1_cut_2111_v42 & track2_cut_2111_v42 & tracks_cut_2111_v42 & dimuon_cut_2111_v42 & kin_cut_2111_v42 & occ_cut_2111_v42]
 
@@ -96,13 +96,15 @@ def e906_data_cuts(tree: uproot.models.TTree.Model_TTree_v19, beam_offset: float
     return events_cut
 
 
-result = uproot.open("./data/merged_RS67_3089LH2.root:result")
-result_mix = uproot.open("./data/merged_RS67_3089LH2.root:result_mix")
-result_flask = uproot.open("./data/merged_RS67_3089flask.root:result")
+result = uproot.open("../data/merged_RS67_3089LH2.root:result")
+result_mix = uproot.open("../data/merged_RS67_3089LH2.root:result_mix")
+result_flask = uproot.open("../data/merged_RS67_3089flask.root:result")
+result_flask_mix = uproot.open("../data/merged_RS67_3089flask.root:result_mix")
 
 tree = e906_data_cuts(result)
 tree_mix = e906_data_cuts(result_mix)
 tree_flask = e906_data_cuts(result_flask)
+tree_flask_mix = e906_data_cuts(result_flask_mix)
 
 weight = (1.0 * 1.57319e+17)/(3.57904e+16)
 print(f"===> PoT weight {weight}")
@@ -110,18 +112,27 @@ print(f"===> PoT weight {weight}")
 len1 = len(tree.mass.to_numpy())
 len2 = len(tree_mix.mass.to_numpy())
 len3 = len(tree_flask.mass.to_numpy())
+len4 = len(tree_flask_mix.mass.to_numpy())
 
 dics = {
-    "mass": np.concatenate((tree.mass.to_numpy(), tree_mix.mass.to_numpy(), tree_flask.mass.to_numpy())),
-    "pT": np.concatenate((tree.pT.to_numpy(), tree_mix.pT.to_numpy(), tree_flask.pT.to_numpy())),
-    "xB": np.concatenate((tree.xB.to_numpy(), tree_mix.xB.to_numpy(), tree_flask.xB.to_numpy())),
-    "xT": np.concatenate((tree.xT.to_numpy(), tree_mix.xT.to_numpy(), tree_flask.xT.to_numpy())),
-    "xF": np.concatenate((tree.xF.to_numpy(), tree_mix.xF.to_numpy(), tree_flask.xF.to_numpy())),
-    "phi": np.concatenate((tree.phi.to_numpy(), tree_mix.phi.to_numpy(), tree_flask.phi.to_numpy())),
-    "costh": np.concatenate((tree.costh.to_numpy(), tree_mix.costh.to_numpy(), tree_flask.costh.to_numpy())),
-    "D1": np.concatenate((tree.D1.to_numpy(), tree_mix.D1.to_numpy(), tree_flask.D1.to_numpy())),
-    "weight": np.concatenate((np.ones(len1), -1.0* np.ones(len2), -1.0* weight* np.ones(len3))),
+    "mass": np.concatenate((tree.mass.to_numpy(), tree_mix.mass.to_numpy(), tree_flask.mass.to_numpy(), tree_flask_mix.mass.to_numpy())),
+    "pT": np.concatenate((tree.pT.to_numpy(), tree_mix.pT.to_numpy(), tree_flask.pT.to_numpy(), tree_flask_mix.pT.to_numpy())),
+    "xB": np.concatenate((tree.xB.to_numpy(), tree_mix.xB.to_numpy(), tree_flask.xB.to_numpy(), tree_flask_mix.xB.to_numpy())),
+    "xT": np.concatenate((tree.xT.to_numpy(), tree_mix.xT.to_numpy(), tree_flask.xT.to_numpy(), tree_flask_mix.xT.to_numpy())),
+    "xF": np.concatenate((tree.xF.to_numpy(), tree_mix.xF.to_numpy(), tree_flask.xF.to_numpy(), tree_flask_mix.xF.to_numpy())),
+    "phi": np.concatenate((tree.phi.to_numpy(), tree_mix.phi.to_numpy(), tree_flask.phi.to_numpy(), tree_flask_mix.phi.to_numpy())),
+    "costh": np.concatenate((tree.costh.to_numpy(), tree_mix.costh.to_numpy(), tree_flask.costh.to_numpy(), tree_flask_mix.costh.to_numpy())),
+    "D1": np.concatenate((tree.D1.to_numpy(), tree_mix.D1.to_numpy(), tree_flask.D1.to_numpy(), tree_flask_mix.D1.to_numpy())),
+    "weight": np.concatenate((np.ones(len1), -1.0* np.ones(len2), -1.0* weight* np.ones(len3), +1.0* weight* np.ones(len4))),
 }
+
+# weights1 = np.array(dics["weight"])
+# weights2 = weights1* weights1
+# sum_weights = np.sum(weights1)
+# sum2_weights = sum_weights* sum_weights
+# sum_weights2 = np.sum(weights2)
+# effective_entries = sum2_weights/sum_weights2
+
 
 outfile = uproot.recreate("./data/RS67_LH2_data.root", compression=uproot.ZLIB(4))
 outfile["tree"] = dics
